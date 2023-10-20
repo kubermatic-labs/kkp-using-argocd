@@ -8,3 +8,8 @@ loki:
 velero:
   image:
     tag: v1.9.0
+
+dex:
+  ingress:
+    # configure your base domain, under which the Kubermatic dashboard shall be available
+    host: mgmt.dev.example.com
