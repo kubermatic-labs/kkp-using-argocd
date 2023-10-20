@@ -1,3 +1,6 @@
 promtail:
   podLabels:
     seed: run-2
+loki:
+  persistence:
+    size: '5Mi'

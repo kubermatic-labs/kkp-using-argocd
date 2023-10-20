@@ -1,3 +1,6 @@
 promtail:
   podLabels:
     env: dev
+loki:
+  persistence:
+    size: '10Mi'
