@@ -1,0 +1,3 @@
+promtail:
+  podLabels:
+    env: dev

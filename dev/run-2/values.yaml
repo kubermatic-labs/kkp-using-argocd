@@ -1,0 +1,3 @@
+promtail:
+  podLabels:
+    seed: run-2
