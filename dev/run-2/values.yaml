@@ -4,3 +4,7 @@ promtail:
 loki:
   persistence:
     size: '5Mi'
+
+velero:
+  image:
+    tag: v1.9.0
