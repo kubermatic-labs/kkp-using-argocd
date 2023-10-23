@@ -1,0 +1,18 @@
+crds:
+# -- Install and upgrade CRDs
+  install: true
+global:
+  image:
+    tag: v2.7.3
+  # See https://github.com/argoproj/argo-helm/issues/1984
+  deploymentStrategy:
+    type: RollingUpdate
+dex:
+  enabled: false
+server:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    host: argocd.vj1.lab.kubermatic.io
