@@ -1,0 +1,67 @@
+apiVersion: kubermatic.k8c.io/v1
+kind: KubermaticSetting
+metadata:
+  name: globalsettings
+spec:
+  cleanupOptions:
+    enabled: true
+  customLinks:
+    - icon: ""
+      label: API
+      location: default
+      url: https://google.com
+    - icon: ""
+      label: Grafana (mgmt)
+      location: default
+      url: https://grafana.google.com/
+    - icon: ""
+      label: Loki (mgmt)
+      location: default
+      url: https://grafana.google.com/explore
+    - icon: ""
+      label: Prometheus (mgmt)
+      location: default
+      url: https://prometheus.google.com/
+    - icon: ""
+      label: Alertmanager (mgmt)
+      location: default
+      url: https://alertmanager.google.com/
+    - icon: ""
+      label: Documentation
+      location: default
+      url: https://docs.kubermatic.com/kubermatic/main/
+    - icon: ""
+      label: Forum
+      location: default
+      url: https://forum.kubermatic.com/
+    - icon: ""
+      label: GitHub
+      location: default
+      url: https://github.com/kubermatic
+  #  - icon: ""
+  #    label: Twitter
+  #    location: default
+  #    url: https://twitter.com/kubermatic
+  #  - icon: ""
+  #    label: Slack
+  #    location: default
+  #    url: http://slack.kubermatic.io/
+
+  defaultNodeCount: 3
+  displayAPIDocs: true
+  displayDemoInfo: false
+  displayTermsOfService: true
+  enableDashboard: true
+  enableExternalClusterImport: true
+  enableOIDCKubeconfig: false
+  machineDeploymentVMResourceQuota:
+    enableGPU: false
+    maxCPU: 64
+    maxRAM: 512
+    minCPU: 1
+    minRAM: 2
+  mlaAlertmanagerPrefix: alertmanager-user
+  mlaGrafanaPrefix: grafana-user
+  restrictProjectCreation: false
+  userProjectsLimit: 5
+

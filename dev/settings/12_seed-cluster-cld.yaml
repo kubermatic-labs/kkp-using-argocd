@@ -1,0 +1,67 @@
+apiVersion: kubermatic.k8c.io/v1
+kind: Seed
+metadata:
+  name: seed-run2-sandbox
+  namespace: kubermatic
+spec:
+  metering:
+    enabled: true
+    reports:
+      metering-daily:
+        interval: 1
+        schedule: 0 6 * * *
+      metering-weekly:
+        interval: 7
+        schedule: 0 6 * * 1
+      # Monthly metering reports will be generated using a custom cronjob till we upgrade to a KKP version that has
+      # changes for https://github.com/kubermatic/kubermatic/issues/12542 in it.
+      # metering-monthly:
+      #   interval: 30
+      #   schedule: 0 6 1 * *
+    storageClassName: kubermatic-fast
+    storageSize: 100Gi
+  # Optional: Country of the seed as ISO-3166 two-letter code, e.g. DE or UK.
+  # For informational purposes in the Kubermatic dashboard only.
+  country: "IN"
+  # Datacenters contains a map of the possible datacenters (DCs) in this seed.
+  # Each DC must have a globally unique identifier (i.e. names must be unique
+  # across all seeds).
+
+  # Optional: Detailed location of the cluster, like "Hamburg" or "Datacenter 7".
+  # For informational purposes in the Kubermatic dashboard only.
+  location: "Azure Cloud"
+  datacenters:
+    cld-sandbox:
+      # Optional: Country of the seed as ISO-3166 two-letter code, e.g. DE or UK.
+      # For informational purposes in the Kubermatic dashboard only.
+      country: "IN"
+      location: "RUN - SANDBOX"
+      spec:
+        azure:
+          location: southindia
+  mla:
+    userClusterMLAEnabled: true
+# Use New Backup Restore
+  etcdBackupRestore:
+    defaultDestination: default
+    destinations:
+      default:
+        bucketName: kubermatic-etcd-backups
+        endpoint: minio.minio-backup.svc.cluster.local
+        credentials:
+          name: kubermatic-s3-credentials
+          namespace: kube-system
+  seedDNSOverwrite: "run.seed"
+  nodeportProxy:
+  #   # Annotations are used to further tweak the LoadBalancer integration with the
+  #   # cloud provider where the seed cluster is running.
+    annotations:
+      service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+  #     metallb.universe.tf/address-pool: kubermatic-nodeport
+  kubeconfig:
+    apiVersion: v1
+    kind: "Secret"
+    name: "seed-eun-sandbox-kubeconfig"
+    fieldPath: "kubeconfig"
+    namespace: "kubermatic"
+
