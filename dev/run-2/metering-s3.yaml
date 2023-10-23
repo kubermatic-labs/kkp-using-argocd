@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  accessKey: eDI4YUpnM1E=
+  bucket: bWV0ZXJpbmctcnVuLXNlZWQ=
+  endpoint: aHR0cHM6Ly9taW5pby5taW5pby1tZXRlcmluZy5zdmMuY2x1c3Rlci5sb2NhbA==
+  region: ZXUtY2VudHJhbC0x
+  secretKey: QVFkbmxveGkwV01VblZmcTZyb2VlYnJL
+kind: Secret
+metadata:
+  name: metering-s3
+  namespace: kubermatic
+type: Opaque
