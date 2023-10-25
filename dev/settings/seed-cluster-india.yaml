@@ -1,7 +1,7 @@
 apiVersion: kubermatic.k8c.io/v1
 kind: Seed
 metadata:
-  name: seed-run2-sandbox
+  name: india
   namespace: kubermatic
 spec:
   metering:

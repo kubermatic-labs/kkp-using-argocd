@@ -1,0 +1,37 @@
+# FIXME: make this chart to be part of values.yaml
+environment: dev
+seed: vj1-master
+isMasterSeed: true
+
+kkpBasePath: "."
+
+repoURL: https://github.com/dharapvj/temp-argocd-test.git
+valuesPathPrefix: "." # This is prefix wrt environment folder e.g. /dev/
+
+# KKP Core
+nginx: true
+certManager: true
+oauth: true
+seedSettings: true
+seedExtras: true
+
+#monitoring
+prometheus: true
+alertManager: true
+grafana: true
+kubeStateMetrics: true
+nodeExporter: true
+blackboxExporter: true
+# FIXME: Get thanos deployment to work as we expect it
+thanos: false    # This gets installed from upstream (bitnami / banzai / stevehipwell) directly
+iapSeedMla: true
+
+#logging
+promtail: true
+loki: true
+
+#backup
+velero: true
+
+# storage
+minio: true

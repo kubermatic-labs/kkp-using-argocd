@@ -15,4 +15,6 @@ server:
     ingressClassName: nginx
     annotations:
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    host: argocd.vj1.lab.kubermatic.io
+    # TODO: need to supply this via --set so that we can use single ArgoCD def for all environments
+    # hosts: 
+    # - argocd.vj1.lab.kubermatic.io
