@@ -1,0 +1,66 @@
+promtail:
+  podLabels:
+    seed: india
+
+velero:
+  image:
+    tag: v1.9.0
+
+iap:
+  deployments:
+    alertmanager:
+      name: alertmanager
+      client_id: alertmanager
+      client_secret: aaa
+      encryption_key: bbb
+      config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
+        scope: "groups openid email"
+        email_domains:
+          - '*'
+        ## do not route health endpoint through the proxy
+        skip_auth_regex:
+          - '/-/healthy'
+      upstream_service: alertmanager.monitoring.svc.cluster.local
+      upstream_port: 9093
+      ingress:
+        host: "alertmanager.india.vj1.lab.kubermatic.io"
+
+    grafana:
+      name: grafana
+      client_id: grafana
+      client_secret: ccc
+      encryption_key: ddd
+      config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
+        scope: "groups openid email"
+        email_domains:
+          - '*'
+        ## do not route health endpoint through the proxy
+        skip_auth_regex:
+          - '/api/health'
+        ## auto-register users based on their email address
+        ## Grafana is configured to look for the X-Forwarded-Email header
+        pass_user_headers: true
+      # enable-authorization-header: false
+      upstream_service: grafana.monitoring.svc.cluster.local
+      upstream_port: 3000
+      ingress:
+        host: "grafana.india.vj1.lab.kubermatic.io"
+
+    prometheus:
+      name: prometheus
+      client_id: prometheus
+      client_secret: eee
+      encryption_key: fff
+      config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
+        scope: "groups openid email"
+        email_domains:
+          - '*'
+        ## do not route health endpoint through the proxy
+        skip_auth_regex:
+          - '/-/healthy'
+      upstream_service: prometheus.monitoring.svc.cluster.local
+      upstream_port: 9090
+      ingress:
+        host: "prometheus.india.vj1.lab.kubermatic.io"
+        annotations:
+          ingress.kubernetes.io/upstream-hash-by: "ip_hash" ## needed for prometheus federations

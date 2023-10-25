@@ -11,7 +11,7 @@ valuesPathPrefix: "." # This is prefix wrt environment folder e.g. /dev/
 # KKP Core
 nginx: true
 certManager: true
-oauth: true
+oauth: false # not configuring seed-local-dex yet. Its TODO:
 seedSettings: true
 seedExtras: true
 

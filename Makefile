@@ -7,11 +7,16 @@ install-kkp-dev:
 	  --charts-directory ${INSTALL_DIR}/charts --config ./dev/vj1-master/k8cConfig.yaml --helm-values ./dev/vj1-master/values.yaml --storageclass aws \
 	  --skip-charts='cert-manager,nginx-ingress-controller,dex'
 
+# DEV Master
 deploy-argo-dev-master:
-	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'hosts[0]=argocd.vj1.lab.kubermatic.io'
-
-deploy-argo-dev-seed:
-	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'hosts[0]=argocd.india.vj1.lab.kubermatic.io'
+	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.vj1.lab.kubermatic.io' --set 'server.ingress.tls[0].hosts[0]=argocd.vj1.lab.kubermatic.io'
 
 deploy-argo-apps-dev-master:
 	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/vj1-master/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -
+
+# DEV India Seed
+deploy-argo-dev-seed:
+	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.india.vj1.lab.kubermatic.io' --set 'server.ingress.tls[0].hosts[0]=argocd.india.vj1.lab.kubermatic.io'
+
+deploy-argo-apps-dev-seed:
+	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/seed-india/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -
