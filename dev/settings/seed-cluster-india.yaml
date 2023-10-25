@@ -61,7 +61,7 @@ spec:
   kubeconfig:
     apiVersion: v1
     kind: "Secret"
-    name: "seed-eun-sandbox-kubeconfig"
+    name: "seed-dev-india-kubeconfig"
     fieldPath: "kubeconfig"
     namespace: "kubermatic"
 

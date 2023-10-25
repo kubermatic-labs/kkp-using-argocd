@@ -15,6 +15,13 @@ server:
     ingressClassName: nginx
     annotations:
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+      cert-manager.io/cluster-issuer: letsencrypt-prod
     # TODO: need to supply this via --set so that we can use single ArgoCD def for all environments
     # hosts: 
     # - argocd.vj1.lab.kubermatic.io
+    tls:
+    - secretName: argocd-tls-certificate
+      # hosts:
+      # - argocd.vj1.lab.kubermatic.io
+
+# FIXME: integrate with dex
