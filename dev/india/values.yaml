@@ -71,5 +71,5 @@ alertmanager:
 
 minio:
   credentials:
-    accessKey: 'kv1PJSH4nrf6dGbdTbbUrmKpta6c8y6h' # 32 byte long
-    secretKey: 'f7CSYVnRsZ7tpvpBTSUa7ZF3uQU9bmeln1GigZXEjtudSYjL7nFXjD6KG9zHT91A' # 64 byte long
+    accessKey: 'h4pUEBuR' # 32 byte long
+    secretKey: 'l1OThaFWY7cxihhkFzHzPKThJsJPofH5' # 64 byte long
