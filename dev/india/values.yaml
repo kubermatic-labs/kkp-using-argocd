@@ -7,6 +7,7 @@ velero:
     tag: v1.9.0
 
 iap:
+  oidc_issuer_url: https://vj1.lab.kubermatic.io/dex
   deployments:
     alertmanager:
       name: alertmanager

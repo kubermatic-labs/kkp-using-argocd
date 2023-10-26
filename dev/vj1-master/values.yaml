@@ -117,6 +117,7 @@ loki:
     size: '10Gi'
 
 iap:
+  oidc_issuer_url: https://mgmt.dev.manufacturing.wacker.corp/dex
   deployments:
     alertmanager:
       name: alertmanager
