@@ -19,4 +19,7 @@ deploy-argo-dev-seed:
 	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.india.vj1.lab.kubermatic.io' --set 'server.ingress.tls[0].hosts[0]=argocd.india.vj1.lab.kubermatic.io'
 
 deploy-argo-apps-dev-seed:
-	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/seed-india/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -
+	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/india/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -
+
+create-long-lived-seed-kubeconfig:
+	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig /opt/personal/k8s-adventure/src/kubeone161/k1init-seed/vj1-seed-kubeconfig > ./seed-ready-kube-config
