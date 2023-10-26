@@ -1,0 +1,35 @@
+velero:
+  # Init containers to add to the Velero deployment's pod spec.
+  # At least one plugin provider image is required.
+  initContainers:
+   - name: velero-plugin-for-aws
+     image: docker.io/velero/velero-plugin-for-aws:v1.1.0
+     imagePullPolicy: IfNotPresent
+     volumeMounts:
+       - mountPath: /target
+         name: plugins
+  ### NOTE: restic is needed for volume backup (in our case prometheus chart)
+  restic:
+    deploy: false
+    resources:
+      requests:
+        cpu: 10m
+        memory: 30Mi
+  credentials:
+    aws:
+      ### random key
+      accessKey: 'WxmjsBt0'
+      secretKey: 'ahxFbwh2JUTrlpE6hyHtKRnlJtkOgwIg' # 64 byte long
+    restic:
+      password: cFXy0NEr6oQpX2QwZyUQ9KLagORD9zUw
+  # define one of your backupStorageLocations as the default
+  backupStorageLocations:
+    aws:
+      provider: aws
+      objectStorage:
+        bucket: velero-backup-dev
+      default: true
+      config:
+        region: minio
+        s3ForcePathStyle: 'true'
+        s3Url: http://minio.minio.svc.cluster.local:9000
