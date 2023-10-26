@@ -47,6 +47,37 @@ dex:
       - https://vj1.lab.kubermatic.io/api/v2/kubeconfig/secret
       - https://vj1.lab.kubermatic.io/api/v2/dashboard/login
 
+  - id: alertmanager
+    name: AlertManager
+    secret: 31XJHoWbktTYBbCIHchCeAaJtepPPS1W
+    RedirectURIs:
+    - https://alertmanager.vj1.lab.kubermatic.io/oauth/callback
+  - id: grafana
+    name: Grafana
+    secret: noBMZ3jhWbKlep2Op9jDfDWg1DMgydCX
+    RedirectURIs:
+    - https://grafana.vj1.lab.kubermatic.io/oauth/callback
+  - id: prometheus
+    name: Prometheus
+    secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
+    RedirectURIs:
+    - https://prometheus.vj1.lab.kubermatic.io/oauth/callback
+  - id: alertmanager_india
+    name: AlertManager for India seed cluster
+    secret: Xi1k5yHpMqDrfzFDnYx7X81fcWbeAhcr
+    RedirectURIs:
+    - https://alertmanager.india.vj1.lab.kubermatic.io/oauth/callback
+  - id: grafana_india
+    name: Grafana for India seed cluster
+    secret: hdNKLfJ02K5bxT1DpWxR4o1iGBg4eqqt
+    RedirectURIs:
+    - https://grafana.india.vj1.lab.kubermatic.io/oauth/callback
+  - id: prometheus_india
+    name: Prometheus for India seed cluster
+    secret: SRqPgRKVLg3hd8srpdhqJUYwIL1BcS58
+    RedirectURIs:
+    - https://prometheus.india.vj1.lab.kubermatic.io/oauth/callback
+
   # Depending on your chosen login method, you need to configure either an OAuth provider like
   # Google or GitHub, or configure a set of static passwords. Check the `charts/oauth/values.yaml`
   # for an overview over all available connectors.
@@ -90,8 +121,8 @@ iap:
     alertmanager:
       name: alertmanager
       client_id: alertmanager
-      client_secret: aaa
-      encryption_key: bbb
+      client_secret: 31XJHoWbktTYBbCIHchCeAaJtepPPS1W
+      encryption_key: UADeR15wrVNEfqkhT8kIARNOA4Iy10un
       config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
         scope: "groups openid email"
         #allowed_groups: Kubermatic_Managed_Service_Team
@@ -108,8 +139,8 @@ iap:
     grafana:
       name: grafana
       client_id: grafana
-      client_secret: ccc
-      encryption_key: ddd
+      client_secret: noBMZ3jhWbKlep2Op9jDfDWg1DMgydCX
+      encryption_key: 48wG5FXnPFrfMbWgFRrZ70LqlYHn3vu0
       config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
         scope: "groups openid email"
         #allowed_groups: Kubermatic_Managed_Service_Team
@@ -130,8 +161,8 @@ iap:
     prometheus:
       name: prometheus
       client_id: prometheus
-      client_secret: eee
-      encryption_key: fff
+      client_secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
+      encryption_key: 7jvKLRPcdnyAGadt9oKYvixpP3JhhrG2
       config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
         scope: "groups openid email"
         #allowed_groups: Kubermatic_Managed_Service_Team
