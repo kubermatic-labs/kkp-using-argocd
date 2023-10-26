@@ -5,7 +5,7 @@ metadata:
 parameters:
   iopsPerGB: "25"
   type: io1
-  allowAutoIOPSPerGBIncrease: true
+  allowAutoIOPSPerGBIncrease: "true"
 provisioner: ebs.csi.aws.com
 reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
