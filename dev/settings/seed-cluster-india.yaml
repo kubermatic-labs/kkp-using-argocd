@@ -47,7 +47,7 @@ spec:
     destinations:
       default:
         bucketName: kubermatic-etcd-backups
-        endpoint: minio.minio-backup.svc.cluster.local
+        endpoint: minio.minio.svc.cluster.local
         credentials:
           name: kubermatic-s3-credentials
           namespace: kube-system

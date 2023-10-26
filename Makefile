@@ -1,4 +1,5 @@
-KKP_VERSION=v2.23.2
+#KKP_VERSION=v2.23.2
+KKP_VERSION=v2.23.6
 INSTALL_DIR=/opt/kubermatic/wacker-git/sandbox-setup/kubermatic/mgmt.sandbox.manufacturing.wacker.corp/releases/${KKP_VERSION}
 
 
