@@ -64,3 +64,6 @@ iap:
         host: "prometheus.india.vj1.lab.kubermatic.io"
         annotations:
           ingress.kubernetes.io/upstream-hash-by: "ip_hash" ## needed for prometheus federations
+
+alertmanager:
+  storageSize: 1Gi
