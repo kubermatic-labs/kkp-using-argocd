@@ -13,19 +13,35 @@ spec:
     - icon: ""
       label: Grafana (mgmt)
       location: default
-      url: https://grafana.google.com/
+      url: https://grafana.vj1.lab.kubermatic.io
     - icon: ""
       label: Loki (mgmt)
       location: default
-      url: https://grafana.google.com/explore
+      url: https://grafana.vj1.lab.kubermatic.io/explore
     - icon: ""
       label: Prometheus (mgmt)
       location: default
-      url: https://prometheus.google.com/
+      url: https://prometheus.vj1.lab.kubermatic.io
     - icon: ""
       label: Alertmanager (mgmt)
       location: default
-      url: https://alertmanager.google.com/
+      url: https://alertmanager.vj1.lab.kubermatic.io
+    - icon: ""
+      label: Grafana (india)
+      location: default
+      url: https://grafana.india.vj1.lab.kubermatic.io
+    - icon: ""
+      label: Loki (india)
+      location: default
+      url: https://grafana.india.vj1.lab.kubermatic.io/explore
+    - icon: ""
+      label: Prometheus (india)
+      location: default
+      url: https://prometheus.india.vj1.lab.kubermatic.io
+    - icon: ""
+      label: Alertmanager (india)
+      location: default
+      url: https://alertmanager.india.vj1.lab.kubermatic.io
     - icon: ""
       label: Documentation
       location: default

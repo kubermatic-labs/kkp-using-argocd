@@ -68,3 +68,8 @@ iap:
 
 alertmanager:
   storageSize: 4Gi
+
+minio:
+  credentials:
+    accessKey: 'kv1PJSH4nrf6dGbdTbbUrmKpta6c8y6h' # 32 byte long
+    secretKey: 'f7CSYVnRsZ7tpvpBTSUa7ZF3uQU9bmeln1GigZXEjtudSYjL7nFXjD6KG9zHT91A' # 64 byte long

@@ -178,3 +178,11 @@ iap:
         host: "prometheus.vj1.lab.kubermatic.io"
         annotations:
           ingress.kubernetes.io/upstream-hash-by: "ip_hash" ## needed for prometheus federations
+
+alertmanager:
+  storageSize: 4Gi
+
+minio:
+  credentials:
+    accessKey: '9XLR0TfxQYVnyIAYamS6dcWOKpbgjYOi' # 32 byte long
+    secretKey: 'nkW9P6vG2bWfVcXG2BYhdcvlZSEWsYYDtPKKrbkxctgGjdId369u9OxOnoLMJNNW' # 64 byte long
