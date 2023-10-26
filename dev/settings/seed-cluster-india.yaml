@@ -29,16 +29,16 @@ spec:
 
   # Optional: Detailed location of the cluster, like "Hamburg" or "Datacenter 7".
   # For informational purposes in the Kubermatic dashboard only.
-  location: "Azure Cloud"
+  location: "AWS India"
   datacenters:
-    cld-sandbox:
+    ap-south-1:
       # Optional: Country of the seed as ISO-3166 two-letter code, e.g. DE or UK.
       # For informational purposes in the Kubermatic dashboard only.
       country: "IN"
-      location: "RUN - SANDBOX"
+      location: "India - dev"
       spec:
-        azure:
-          location: southindia
+        aws:
+          region: ap-south-1
   mla:
     userClusterMLAEnabled: true
 # Use New Backup Restore
@@ -51,7 +51,7 @@ spec:
         credentials:
           name: kubermatic-s3-credentials
           namespace: kube-system
-  seedDNSOverwrite: "run.seed"
+  seedDNSOverwrite: "india.seed"
   nodeportProxy:
   #   # Annotations are used to further tweak the LoadBalancer integration with the
   #   # cloud provider where the seed cluster is running.
