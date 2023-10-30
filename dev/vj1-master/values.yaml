@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+nginx:
+  controller:
+    config:
+      # FIXME: Not to be used in production environment. Using this only because we have staging cert for now.
+      hsts:false
+
 # Dex Is the OpenID Provider for Kubermatic.
 dex:
   ingress:
@@ -253,8 +259,6 @@ iap:
         host: "prometheus1.vj1.lab.kubermatic.io"
         annotations:
           ingress.kubernetes.io/upstream-hash-by: "ip_hash" ## needed for prometheus federations
-
-
 
 alertmanager:
   storageSize: 4Gi
