@@ -6,7 +6,9 @@ metadata:
   namespace: default
 spec:
   acme:
-    server: https://acme-v02.api.letsencrypt.org/directory 
+    # TODO: In production - don't use this staging registry
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    #server: https://acme-v02.api.letsencrypt.org/directory
     email: vijay@kubermatic.com
     privateKeySecretRef:
       name: letsencrypt-prod-acme-account-key
