@@ -79,5 +79,6 @@ spec:
   mlaAlertmanagerPrefix: alertmanager-user
   mlaGrafanaPrefix: grafana-user
   restrictProjectCreation: false
+  restrictProjectDeletion: true
   userProjectsLimit: 5
 
