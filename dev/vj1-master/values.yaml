@@ -16,7 +16,7 @@ nginx:
   controller:
     config:
       # FIXME: Not to be used in production environment. Using this only because we have staging cert for now.
-      - hsts:false
+      hsts: false
 
 # Dex Is the OpenID Provider for Kubermatic.
 dex:
