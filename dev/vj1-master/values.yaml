@@ -209,7 +209,7 @@ iap:
         ## do not route health endpoint through the proxy
         skip_auth_regex:
           - '/-/healthy'
-      upstream_service: alertmanager.monitoring1.svc.cluster.local
+      upstream_service: kube-prometheus-stack-alertmanager.monitoring1.svc.cluster.local
       upstream_port: 9093
       ingress:
         host: "alertmanager1.vj1.lab.kubermatic.io"
@@ -230,8 +230,8 @@ iap:
         ## Grafana is configured to look for the X-Forwarded-Email header
         pass_user_headers: true
       # enable-authorization-header: false
-      upstream_service: grafana.monitoring1.svc.cluster.local
-      upstream_port: 3000
+      upstream_service: kube-prometheus-stack-grafana.monitoring1.svc.cluster.local
+      upstream_port: 80
       ingress:
         host: "grafana1.vj1.lab.kubermatic.io"
     prometheus1:
@@ -247,7 +247,7 @@ iap:
         ## do not route health endpoint through the proxy
         skip_auth_regex:
           - '/-/healthy'
-      upstream_service: prometheus.monitoring1.svc.cluster.local
+      upstream_service: kube-prometheus-stack-prometheus.monitoring1.svc.cluster.local
       upstream_port: 9090
       ingress:
         host: "prometheus1.vj1.lab.kubermatic.io"
