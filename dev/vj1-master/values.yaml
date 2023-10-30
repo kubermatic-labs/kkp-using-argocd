@@ -62,7 +62,7 @@ dex:
     secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
     RedirectURIs:
     - https://prometheus.vj1.lab.kubermatic.io/oauth/callback
-# Kube-prometheus-stack components
+  # Kube-prometheus-stack components
   - id: alertmanager1
     name: AlertManager Kube-prometheus-stack
     secret: 31XJHoWbktTYBbCIHchCeAaJtepPPS1W
@@ -78,7 +78,7 @@ dex:
     secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
     RedirectURIs:
     - https://prometheus1.vj1.lab.kubermatic.io/oauth/callback
-# India seed
+  # India seed
   - id: alertmanager_india
     name: AlertManager for India seed cluster
     secret: Xi1k5yHpMqDrfzFDnYx7X81fcWbeAhcr
@@ -197,7 +197,7 @@ iap:
         annotations:
           ingress.kubernetes.io/upstream-hash-by: "ip_hash" ## needed for prometheus federations
     alertmanager1:
-      name: alertmanager
+      name: alertmanager1
       client_id: alertmanager1
       client_secret: 31XJHoWbktTYBbCIHchCeAaJtepPPS1W
       encryption_key: UADeR15wrVNEfqkhT8kIARNOA4Iy10un
@@ -214,7 +214,7 @@ iap:
       ingress:
         host: "alertmanager1.vj1.lab.kubermatic.io"
     grafana1:
-      name: grafana
+      name: grafana1
       client_id: grafana1
       client_secret: noBMZ3jhWbKlep2Op9jDfDWg1DMgydCX
       encryption_key: 48wG5FXnPFrfMbWgFRrZ70LqlYHn3vu0
@@ -235,7 +235,7 @@ iap:
       ingress:
         host: "grafana1.vj1.lab.kubermatic.io"
     prometheus1:
-      name: prometheus
+      name: prometheus1
       client_id: prometheus1
       client_secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
       encryption_key: 7jvKLRPcdnyAGadt9oKYvixpP3JhhrG2
