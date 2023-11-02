@@ -1,0 +1,115 @@
+kubeControllerManager:
+  serviceMonitor:
+    https: false
+kubeScheduler:
+  serviceMonitor:
+    https: false
+grafana:
+  grafana.ini:
+    security:
+      # TODO: There are values that are customizable in Kubermatic chart. We need to think about them
+      # admin_password: {{ .Values.grafana.password | quote }}
+      # admin_user: {{ .Values.grafana.user | quote }}
+    auth:
+      disable_login_form: false 
+    auth.basic:
+      enabled: false
+    auth.proxy:
+      enabled: true
+      header_name: X-Forwarded-Email
+      header_property: username
+      auto_sign_up: true
+    users:
+      viewers_can_edit: false
+      auto_assign_org_role: Viewer
+  additionalDataSources:
+  - name: Loki
+    type: loki
+    # TODO: temporarily using pre-installed loki from Kubermatic monitoring namespace
+    url: http://loki.logging:3100
+    access: proxy
+    orgId: 1
+    version: 1
+  dashboardProviders:
+   dashboardproviders.yaml:
+     apiVersion: 1
+     providers:
+     - name: 'KKP'
+       orgId: 1
+       folder: 'KKP'
+       type: file
+       disableDeletion: false
+       editable: true
+       options:
+         path: /tmp/dashboards/KKP
+  sidecar:
+    dashboards:
+      defaultFolderName: General
+      folderAnnotation: grafana_dashboard_folder
+# prometheus:
+#   prometheusSpec:
+#     ruleSelectorNilUsesHelmValues: false
+#     ruleSelector:
+#       matchLabels:
+#         role: alert-rules
+prometheus-node-exporter:
+  service:
+    port: 9101
+    targetPort: 9101
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['job']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'slack-notifications'
+      routes:
+      - match:
+          alertname: Watchdog
+        receiver: 'null'
+      - match:
+          alertname: InfoInhibitor
+        receiver: 'null'
+      # - match:
+      #     alertname: KubeClientCertificateExpiration
+      #   receiver: 'null'
+      # - match:
+      #     alertname: KubeCPUOvercommit
+      #   receiver: 'null'
+      # - match:
+      #     alertname: CPUThrottlingHigh
+      #   receiver: 'null'
+    receivers:
+    - name: 'null'
+    - name: 'slack-notifications'
+      slack_configs:
+      - channel: '#k8s-alerts'
+        send_resolved: true
+        icon_url: https://avatars3.githubusercontent.com/u/3380462
+        title: |-
+          [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }} for {{ .CommonLabels.job }}
+          {{- if gt (len .CommonLabels) (len .GroupLabels) -}}
+            {{" "}}(
+            {{- with .CommonLabels.Remove .GroupLabels.Names }}
+              {{- range $index, $label := .SortedPairs -}}
+                {{ if $index }}, {{ end }}
+                {{- $label.Name }}="{{ $label.Value -}}"
+              {{- end }}
+            {{- end -}}
+            )
+          {{- end }}
+        text: >-
+          {{ range .Alerts -}}
+          *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+
+          *Description:* {{ .Annotations.description }}
+
+          *Details:*
+            {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+            {{ end }}
+          {{ end }}
+    templates:
+    - '/etc/alertmanager/config/*.tmpl'

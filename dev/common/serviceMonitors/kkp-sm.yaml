@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    release: kube-prometheus-stack
+  name: kubermatic-apiserver
+  # TODO: Since the namespace must match where Prometheus is getting created, the SM should be part of the parent monitoring chart we will write
+  namespace: monitoring1
+spec:
+  selector:
+    matchLabels:
+      # This label MUST match the label ON THE SVC and not the matchLabel in SVC.
+      app.kubernetes.io/name: kubermatic-api
+  namespaceSelector:
+    matchNames:
+    - kubermatic
+  endpoints:
+  - targetPort: 8085
+

@@ -27,3 +27,6 @@ deploy-argo-apps-dev-seed:
 
 create-long-lived-seed-kubeconfig:
 	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig /opt/personal/k8s-adventure/src/kubeone161/k1init-seed/vj1-seed-kubeconfig > ./seed-ready-kube-config
+
+deploy-kube-prometheus-stack:
+	helm upgrade --install -n monitoring1 --create-namespace kube-prometheus-stack prometheus-community/kube-prometheus-stack -f values-kube-prometheus-stack.yaml -f values-kube-prometheus-stack-slack-config.yaml

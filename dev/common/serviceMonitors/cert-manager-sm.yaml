@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    release: kube-prometheus-stack
+  name: cert-manager
+  # TODO: Since the namespace must match where Prometheus is getting created, the SM should be part of the parent monitoring chart we will write
+  namespace: monitoring1
+spec:
+  selector:
+    matchLabels:
+      # This label MUST match the label ON THE SVC and not the matchLabel in SVC.
+      app: cert-manager
+  namespaceSelector:
+    matchNames:
+    - cert-manager
+  endpoints:
+  - port: tcp-prometheus-servicemonitor
+
