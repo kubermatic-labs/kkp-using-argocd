@@ -35,3 +35,8 @@ velero: true
 
 # storage
 minio: true
+
+#user cluster mla
+userMla:
+  enable: true # master switch to control whether you want to deploy user-cluster MLA or not
+  minio: true

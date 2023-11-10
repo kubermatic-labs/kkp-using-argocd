@@ -57,6 +57,26 @@ prometheus-node-exporter:
     port: 9101
     targetPort: 9101
 alertmanager:
+  podDisruptionBudget:
+    enabled: true
+  alertmanagerSpec:
+    replicas: 3
+    # TODO: We might need to add a prometheus-config-reloader here
+    #containers: []
+    resources:
+      limits:
+        cpu: 200m
+        memory: 48Mi
+      requests:
+        cpu: 100m
+        memory: 32Mi
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: kubermatic-fast
+          resources:
+            requests:
+              storage: 1Gi
   config:
     global:
       resolve_timeout: 5m
