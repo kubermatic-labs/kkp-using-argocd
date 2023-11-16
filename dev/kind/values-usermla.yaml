@@ -45,3 +45,62 @@ loki-distributed:
   ruler:
     persistence:
       size: 50Mi
+
+iap:
+  oidc_issuer_url: https://vj1.lab.kubermatic.io/dex
+  customProviderCA:
+      secretName: letsencrypt-staging-ca-cert
+      secretKey: ca.crt
+  deployments:
+    grafana:
+      name: grafana
+      replicas: 1
+      # FIXME: Change these values in both places
+      client_id: grafana_user_kind
+      client_secret: xUDIVO9pTZxEcJ4h2kI52yP9sBZHvhQG
+      encryption_key: RK2lzZm5SXSPe1xaLSOJw4tYIRSEN7cq
+      config:
+        scope: "groups openid email"
+        email_domains:
+          - "*"
+        ## do not route health endpoint through the proxy
+        skip_auth_regex:
+          - "/api/health"
+        ## auto-register users based on their email address
+        ## Grafana is configured to look for the X-Forwarded-Email header
+        pass_user_headers: true
+      upstream_service: grafana.mla.svc.cluster.local
+      upstream_port: 80
+      ingress:
+        host: "grafana-user.kind.vj1.lab.kubermatic.io"
+
+    alertmanager:
+      name: alertmanager
+      replicas: 1
+      client_id: alertmanager_user_kind
+      client_secret: Lqzhcb7zn6k0xIqElvoQzRWPdXcvlI5c
+      encryption_key: 8HXhpJGEl4nAUfT5btovE0quZ6f9Kf5U
+      config:
+        scope: "groups openid email"
+        email_domains:
+          - "*"
+        ## do not route health endpoint through the proxy
+        skip_auth_regex:
+          - "/ready"
+        ## auto-register users based on their email address
+        ## Grafana is configured to look for the X-Forwarded-Email header
+        pass_user_headers: true
+      upstream_service: alertmanager-proxy.mla.svc.cluster.local
+      upstream_port: 8080
+      ingress:
+        host: "alertmanager-user.kind.vj1.lab.kubermatic.io"
+  # # the cert-manager Issuer (or ClusterIssuer) responsible for managing the certificates
+  # certIssuer:
+  #   kind: ClusterIssuer
+  #   name: ca-prod
+  # # provides secret name at iap namespace for secret for a ca.crt file; this is required if
+  # # the OIDC provider (by default: Dex) uses a custom CA, because the oauth-proxy needs to
+  # # validate the user tokens with the OIDC provider.
+  # customProviderCA:
+  #   secretName: ca-cert
+  #   secretKey: ca.crt

@@ -47,5 +47,4 @@ userMla:
   cortex: true
   lokiDistributed: true
   alertmanagerProxy: true
-#   caSecret: true
-#   iapMla: true
+  iapMla: true
