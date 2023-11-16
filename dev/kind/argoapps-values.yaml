@@ -44,6 +44,8 @@ userMla:
   minioLifecycleMgr: true
   grafana: true
   consul: true
-#   cortex: false
-#   lokiDistributed: false
+  cortex: true
+  lokiDistributed: true
   alertmanagerProxy: true
+#   caSecret: true
+#   iapMla: true

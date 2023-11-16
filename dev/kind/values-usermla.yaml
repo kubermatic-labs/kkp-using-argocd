@@ -25,3 +25,17 @@ cortex:
   compactor:
     persistentVolume:
       size: 50Mi
+
+loki-distributed:
+  ingester:
+    persistence:
+      size: 50Mi
+  querier:
+    persistence:
+      size: 50Mi
+  compactor:
+    persistence:
+      size: 50Mi
+  ruler:
+    persistence:
+      size: 50Mi
