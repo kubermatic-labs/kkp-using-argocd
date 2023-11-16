@@ -3,3 +3,25 @@ minio:
     size: 500Mi
   serviceAccount:
     name: minio-sa
+consul:
+  server:
+    storage: 50Mi
+grafana:
+  persistence:
+    size: 50Mi
+cortex:
+  alertmanager:
+    persistentVolume:
+      size: 50Mi
+  distributor:
+    persistentVolume:
+      size: 50Mi
+  ingester:
+    persistentVolume:
+      size: 50Mi
+  store_gateway:
+    persistentVolume:
+      size: 50Mi
+  compactor:
+    persistentVolume:
+      size: 50Mi

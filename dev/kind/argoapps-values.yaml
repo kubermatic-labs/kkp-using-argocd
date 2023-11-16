@@ -40,3 +40,10 @@ minio: false
 userMla:
   enable: true # master switch to control whether you want to deploy user-cluster MLA or not
   minio: true
+  secrets: true
+  minioLifecycleMgr: true
+  grafana: true
+  consul: true
+#   cortex: false
+#   lokiDistributed: false
+  alertmanagerProxy: true
