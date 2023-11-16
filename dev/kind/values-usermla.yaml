@@ -1,6 +1,6 @@
 minio:
   persistence:
-    size: 500Mi
+    size: 50Mi
   serviceAccount:
     name: minio-sa
 consul:
