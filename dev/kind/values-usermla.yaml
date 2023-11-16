@@ -25,6 +25,8 @@ cortex:
   compactor:
     persistentVolume:
       size: 50Mi
+  runtimeconfigmap:
+    create: true
 
 loki-distributed:
   ingester:
