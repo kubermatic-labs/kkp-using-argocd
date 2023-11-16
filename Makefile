@@ -33,7 +33,7 @@ deploy-kube-prometheus-stack:
 
 ### Local testing
 create-kind-cluster:
-	kind create cluster --config=./cluster-nodeport.yaml --image kindest/node:v1.27.3
+	kind create cluster --config=./kind-install/cluster-nodeport.yaml --image kindest/node:v1.27.3
 
 deploy-argo-kind-cluster:
 	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.dreamit.local' --set 'server.ingress.tls[0].hosts[0]=argocd.dreamit.local'
