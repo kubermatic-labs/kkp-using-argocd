@@ -30,3 +30,12 @@ create-long-lived-seed-kubeconfig:
 
 deploy-kube-prometheus-stack:
 	helm upgrade --install -n monitoring1 --create-namespace kube-prometheus-stack prometheus-community/kube-prometheus-stack -f values-kube-prometheus-stack.yaml -f values-kube-prometheus-stack-slack-config.yaml
+
+### Local testing
+create-kind-cluster:
+	kind create cluster --config=./cluster-nodeport.yaml --image kindest/node:v1.27.3
+
+deploy-argo-kind-cluster:
+	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.dreamit.local' --set 'server.ingress.tls[0].hosts[0]=argocd.dreamit.local'
+deploy-argo-apps-kind-cluster:
+	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/kind/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -

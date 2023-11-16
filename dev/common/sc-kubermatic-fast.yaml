@@ -3,9 +3,7 @@ kind: StorageClass
 metadata:
   name: kubermatic-fast
 parameters:
-  iopsPerGB: "25"
-  type: io1
-  allowAutoIOPSPerGBIncrease: "true"
+  type: gp3
 provisioner: ebs.csi.aws.com
 reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
