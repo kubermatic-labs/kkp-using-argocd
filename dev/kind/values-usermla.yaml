@@ -1,3 +1,5 @@
 minio:
   persistence:
     size: 500Mi
+  serviceAccount:
+    name: minio-sa
