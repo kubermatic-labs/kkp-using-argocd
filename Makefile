@@ -1,5 +1,6 @@
-#KKP_VERSION=v2.23.2
-KKP_VERSION=v2.23.6
+KKP_VERSION=v2.25.5
+# TODO: To test KKP upgrade scenario
+#KKP_VERSION=v2.25.6
 INSTALL_DIR=/opt/kubermatic/wacker-git/sandbox-setup/kubermatic/mgmt.sandbox.manufacturing.wacker.corp/releases/${KKP_VERSION}
 
 
@@ -9,7 +10,7 @@ install-kkp-dev:
 	  --skip-charts='cert-manager,nginx-ingress-controller,dex'
 
 create-long-lived-master-seed-kubeconfig:
-	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig /opt/personal/k8s-adventure/src/kubeone161/k1init/vj1-master-kubeconfig > ./seed-ready-kube-config
+	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig /opt/personal/k8s-adventure/src/kubeone181/k1init/vj-dev-master-kubeconfig > ./seed-ready-kube-config
 
 # DEV Master
 deploy-argo-dev-master:
@@ -17,6 +18,10 @@ deploy-argo-dev-master:
 
 deploy-argo-apps-dev-master:
 	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/vj1-master/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -
+
+push-git-tag-dev:
+	git tag -f dev-kkp-${KKP_VERSION}
+	git push origin -f dev-kkp-${KKP_VERSION}
 
 # DEV India Seed
 deploy-argo-dev-seed:
@@ -26,7 +31,7 @@ deploy-argo-apps-dev-seed:
 	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/india/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -
 
 create-long-lived-seed-kubeconfig:
-	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig /opt/personal/k8s-adventure/src/kubeone161/k1init-seed/vj1-seed-kubeconfig > ./seed-ready-kube-config
+	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig /opt/personal/k8s-adventure/src/kubeone181/k1init-seed/vj-dev-seed-kubeconfig > ./seed-ready-kube-config
 
 deploy-kube-prometheus-stack:
 	helm upgrade --install -n monitoring1 --create-namespace kube-prometheus-stack prometheus-community/kube-prometheus-stack -f values-kube-prometheus-stack.yaml -f values-kube-prometheus-stack-slack-config.yaml
