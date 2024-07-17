@@ -2,10 +2,6 @@ promtail:
   podLabels:
     seed: india
 
-velero:
-  image:
-    tag: v1.9.0
-
 iap:
   oidc_issuer_url: https://vj1.lab.kubermatic.io/dex
   # FIXME: Need to change in production environment to use production letsencrypt.
