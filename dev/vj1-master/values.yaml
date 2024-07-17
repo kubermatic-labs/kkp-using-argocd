@@ -142,6 +142,7 @@ loki:
 
 iap:
   oidc_issuer_url: https://vj1.lab.kubermatic.io/dex
+  # FIXME: Need to change in production environment to use production letsencrypt.
   customProviderCA:
       secretName: letsencrypt-staging-ca-cert
       secretKey: ca.crt

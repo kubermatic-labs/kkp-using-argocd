@@ -65,6 +65,10 @@ iap:
         host: "prometheus.india.vj1.lab.kubermatic.io"
         annotations:
           ingress.kubernetes.io/upstream-hash-by: "ip_hash" ## needed for prometheus federations
+  # the cert-manager Issuer (or ClusterIssuer) responsible for managing the certificates
+  certIssuer:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
 
 alertmanager:
   storageSize: 4Gi
