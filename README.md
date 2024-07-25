@@ -3,13 +3,13 @@
 ## Need of GitOps solution
 Kubermatic Kubernetes Platform is very versatile solution to create and manage Kuberntes clusters (user-clusters) across plethora of Cloud providers and on-prem virtualizaton platforms. But this flexibility also means that there are good amount of moving parts. Kubermatic Kubernetes Platform (KKP) provides various tools to manage user-clusters across various regions and cloud.
 
-This is why if we utilize a GitOps solution to manage KKP and it's upgrades, KKP administrator would have better peace of mind. While KKP installation does not come ready with a GitOps solution, we have provided a unofficial component for ArgoCD based KKP management.
+This is why, if we utilize a GitOps solution to manage KKP and it's upgrades, KKP administrator would have better peace of mind. While KKP installation does not come ready with a GitOps solution, we have provided a unofficial component for ArgoCD based KKP management. TODO: Add link to community-compoents page.
 
 This page outlines how to install ArgoCD and team provided Apps to manage KKP seeds and their upgrades.
 
 ## Preparation
 
-In order to setup and manage KKP using a GitOps solution, one must first know some basics about KKP. Following links could be useful to get that knowledge, if you are new to KKP
+In order to setup and manage KKP using a GitOps solution, one must first know some basics about KKP. Following links could be useful to get that knowledge, if you are new to KKP.
 
 **FIXME:** - remove version specific link parts
 
@@ -25,14 +25,14 @@ For the demonstration,
 1. install KKP master on one cluster (c1) and also use this cluster as seed (master-seed combo cluster)
 1. Make 2nd cluster (c2) as dedicated seed
 
-**Note:** Configuring values for all the components of KKP is a humongous task. Also - each customer might like a different directory structure to manage KKP installation. This ArgoCD Apps based approach is an opinionated attempt to provide a standard structure that can be used in most of the customer places. Refer to README.md in ArgoCD Apps compoent to understand how you can customize this, if needed.
+Folder and File Structure section in the README.md of ArgoCD Apps Component explains what files should be present for each seed in what folders and how to customize behavior of ArgoCD apps installation.
+
+**Note:** Configuring values for all the components of KKP is a humongous task. Also - each customer might like a different directory structure to manage KKP installation. This ArgoCD Apps based approach is an opinionated attempt to provide a standard structure that can be used in most of the customer installations. If you need different directory structure, refer to README.md in ArgoCD Apps compoent to understand how you can customize this, if needed.
 
 **TODO:** Update README.md URL above once the PR in community-component is merge.
 
-Folder and File Structure section in the README.md of ArgoCD Apps Component explains what files should be present for each seed in what folders and how to customize behavior of ArgoCD apps installation.
-
 ### ArgoCD Apps
-We will install ArgoCD on both the clusters and we will following components on both clusters via ArgoCD. In non-GitOps scenario, some  of these components are managed via kubermatic-installer and rest are left to managed by KKP administrator in master/seed clusters.
+We will install ArgoCD on both the clusters and we will install following components on both clusters via ArgoCD. In non-GitOps scenario, some  of these components are managed via kubermatic-installer and rest are left to be managed by KKP administrator in master/seed clusters by themselves.
 
 1. Core KKP components
     1. DEX (in master)
@@ -67,11 +67,13 @@ We will install ArgoCD on both the clusters and we will following components on 
 ## Installation
 
 ### Setup two Kubernetes Clusters
-This step install two Kubernetes clusters using Kubeone in AWS. You can skip this step, if you already have access to two kubernetes clusters.
+> This step install two Kubernetes clusters using Kubeone in AWS. You can skip this step, if you already have access to two kubernetes clusters.
 
-Use kubeone to create 2 clusters in DEV env - master-seed combo and regular seed. Steps below are generic to any kubeone installation. We install basic VMs using terraform and then use kubeone to bootstrap the control plane and worker node machines.
+Use kubeone to create 2 clusters in DEV env - master-seed combo (c1) and regular seed (c2). Steps below are generic to any kubeone installation. a) We create basic VMs in AWS using terraform and then b) Use kubeone to bootstrap the control plane on these VMs and then rollout worker node machines.
 
 **Note:** The sample code provided here to create kubernetes clusters uses single VM control-plane. This is NOT recommeded in any way as production. Always use HA control-plane for any production grade kubernetes installation.
+
+You should be looking at `terraform.tfvars` and `kubeone.yaml` files to customize these folder as per your needs.
 
 ```shell
 # directory structure
@@ -121,6 +123,8 @@ This same folder structure can be further expanded to add kubeone installations 
 
 ### Installation of KKP with Argo Installation Steps
 For ease of installation, I have prepared a `Makefile` to just make commands easier to read. Internally, it just depends on helm, kubectl and kubermatic-installer binaries.
+
+**FIXME:** kubermatic-installer is currently referred from external location. We need to get it downloaded
 
 While for my demo, provided files would work, you would need to look through each file under `dev` folder and customize the values as per your need.
 

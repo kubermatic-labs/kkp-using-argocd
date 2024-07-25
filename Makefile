@@ -1,7 +1,7 @@
 KKP_VERSION=v2.25.5
 # TODO: To test KKP upgrade scenario
 #KKP_VERSION=v2.25.6
-INSTALL_DIR=/opt/kubermatic/wacker-git/sandbox-setup/kubermatic/mgmt.sandbox.manufacturing.wacker.corp/releases/${KKP_VERSION}
+INSTALL_DIR=../kubermatic/releases/${KKP_VERSION}
 
 
 install-kkp-dev:
