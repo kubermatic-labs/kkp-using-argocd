@@ -2,8 +2,8 @@ crds:
 # -- Install and upgrade CRDs
   install: true
 global:
-  image:
-    tag: v2.7.3
+  # image:
+  #   tag: v2.7.3
   # See https://github.com/argoproj/argo-helm/issues/1984
   deploymentStrategy:
     type: RollingUpdate
@@ -16,12 +16,19 @@ server:
     annotations:
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
       cert-manager.io/cluster-issuer: letsencrypt-prod
-    # TODO: need to supply this via --set so that we can use single ArgoCD def for all environments
+    # supply this via --set so that we can use single ArgoCD def for all environments
     # hosts: 
     # - argocd.vj1.lab.kubermatic.io
     tls:
     - secretName: argocd-tls-certificate
       # hosts:
       # - argocd.vj1.lab.kubermatic.io
-
-# FIXME: integrate with dex
+# To be used for simpler local argocd setup
+#     paths:
+#       - /argocd/
+# configs:
+#   params:
+#     server.insecure: true
+#     server.basehref: /argocd
+#     # -- Used if Argo CD is running behind reverse proxy under subpath different from /
+#     server.rootpath: '/argocd'
