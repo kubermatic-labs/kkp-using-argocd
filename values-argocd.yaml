@@ -32,3 +32,18 @@ server:
 #     server.basehref: /argocd
 #     # -- Used if Argo CD is running behind reverse proxy under subpath different from /
 #     server.rootpath: '/argocd'
+  configs:
+    cm:
+      resource.exclusions: |
+        - apiGroups:
+          - "velero.io"
+          kinds:
+          - "Backup"
+          clusters:
+          - "*"
+        - apiGroups:
+          - cilium.io
+          kinds:
+          - CiliumIdentity
+          clusters:
+          - "*"

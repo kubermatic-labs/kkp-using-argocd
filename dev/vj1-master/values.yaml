@@ -68,22 +68,6 @@ dex:
     secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
     RedirectURIs:
     - https://prometheus.vj1.lab.kubermatic.io/oauth/callback
-  # Kube-prometheus-stack components
-  - id: alertmanager1
-    name: AlertManager Kube-prometheus-stack
-    secret: 31XJHoWbktTYBbCIHchCeAaJtepPPS1W
-    RedirectURIs:
-    - https://alertmanager1.vj1.lab.kubermatic.io/oauth/callback
-  - id: grafana1
-    name: Grafana Kube-prometheus-stack
-    secret: noBMZ3jhWbKlep2Op9jDfDWg1DMgydCX
-    RedirectURIs:
-    - https://grafana1.vj1.lab.kubermatic.io/oauth/callback
-  - id: prometheus1
-    name: Prometheus Kube-prometheus-stack
-    secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
-    RedirectURIs:
-    - https://prometheus1.vj1.lab.kubermatic.io/oauth/callback
   # India seed
   - id: alertmanager_india
     name: AlertManager for India seed cluster
@@ -221,46 +205,6 @@ iap:
       upstream_port: 9093
       ingress:
         host: "alertmanager1.vj1.lab.kubermatic.io"
-    grafana1:
-      name: grafana1
-      client_id: grafana1
-      client_secret: noBMZ3jhWbKlep2Op9jDfDWg1DMgydCX
-      encryption_key: 48wG5FXnPFrfMbWgFRrZ70LqlYHn3vu0
-      config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
-        scope: "groups openid email"
-        #allowed_groups: Kubermatic_Managed_Service_Team
-        email_domains:
-          - '*'
-        ## do not route health endpoint through the proxy
-        skip_auth_regex:
-          - '/api/health'
-        ## auto-register users based on their email address
-        ## Grafana is configured to look for the X-Forwarded-Email header
-        pass_user_headers: true
-      # enable-authorization-header: false
-      upstream_service: kube-prometheus-stack-grafana.monitoring1.svc.cluster.local
-      upstream_port: 80
-      ingress:
-        host: "grafana1.vj1.lab.kubermatic.io"
-    prometheus1:
-      name: prometheus1
-      client_id: prometheus1
-      client_secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
-      encryption_key: 7jvKLRPcdnyAGadt9oKYvixpP3JhhrG2
-      config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
-        scope: "groups openid email"
-        #allowed_groups: Kubermatic_Managed_Service_Team
-        email_domains:
-          - '*'
-        ## do not route health endpoint through the proxy
-        skip_auth_regex:
-          - '/-/healthy'
-      upstream_service: kube-prometheus-stack-prometheus.monitoring1.svc.cluster.local
-      upstream_port: 9090
-      ingress:
-        host: "prometheus1.vj1.lab.kubermatic.io"
-        annotations:
-          ingress.kubernetes.io/upstream-hash-by: "ip_hash" ## needed for prometheus federations
 
 alertmanager:
   storageSize: 4Gi

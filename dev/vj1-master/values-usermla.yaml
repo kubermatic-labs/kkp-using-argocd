@@ -1,0 +1,11 @@
+# To make AWS io1 disk happy 
+cortex:
+  alertmanager:
+    persistentVolume:
+      size: 4Gi
+  compactor:
+    persistentVolume:
+      size: 4Gi
+  store_gateway:
+    persistentVolume:
+      size: 4Gi
