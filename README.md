@@ -100,11 +100,11 @@ kubeone-install
 # Setup CP machines and other infra
 export AWS_PROFILE=<your AWS profile>
 cd kubeone-install/dev-master
-terraform plan && terraform init
+terraform init && terraform plan
 terraform apply -auto-approve
 terraform output -json > tf.json
 cd ../dev-seed
-terraform plan && terraform init
+terraform init && terraform plan
 terraform apply -auto-approve
 terraform output -json > tf.json
 
@@ -122,7 +122,7 @@ export KUBECONFIG=$PWD/vj-dev-seed-kubeconfig  # adjust as per cluster name
 This same folder structure can be further expanded to add kubeone installations for additional environments like staging and prod.
 
 ### Installation of KKP with Argo Installation Steps
-For ease of installation, I have prepared a `Makefile` to just make commands easier to read. Internally, it just depends on helm, kubectl and kubermatic-installer binaries.
+For ease of installation, I have prepared a `Makefile` to just make commands easier to read. Internally, it just depends on helm, kubectl and kubermatic-installer binaries. But you will need to look at `make` target definitions in `Makefile` to adjust DNS names.
 
 **FIXME:** kubermatic-installer is currently referred from external location. We need to get it downloaded
 
@@ -165,9 +165,8 @@ These names would come handy to understand below references to them and customiz
 1. Add seed for self (need manual update of kubeconfig in seed.yaml)
     ```shell
     make create-long-lived-master-seed-kubeconfig
-    # above target creates a file seed-ready-kube-config
-    base64 -w0 ./seed-ready-kube-config
-    # Manually update the output of above commend in the seed-kubeconfig-secret-self.yaml
+    # above target creates a file seed-ready-kube-config with base64 encoded kubeconfig
+    # Manually update the content of seed-ready-kube-config in the seed-kubeconfig-secret-self.yaml
     kubectl apply -f dev/vj1-master/seed-kubeconfig-secret-self.yaml
     ```
 1. Sync all apps in ArgoCD by accessing ArgoCD UI and syncing apps manually
@@ -177,6 +176,7 @@ These names would come handy to understand below references to them and customiz
     # *.self.seed.vj1.lab.kubermatic.io
     ```
 1. Now we can create user-clusters on this master-seed cluster
+1. (only for staging letsencrypt) We need to provide the staging letsencrypt cert so that monitoring IAP components can work. For this, one needs to save the certificate issuer for `https://vj1.lab.kubermatic.io/dex/` from browser / openssl and insert the certificate in `dev/common/custom-ca-bundle.yaml` for the secret `letsencrypt-staging-ca-cert` under key `ca.crt` in base64 encoded format. Post saving the file, commit the change to git and re-apply the tag via `make push-git-tag-dev` and sync the ArgoCD App .
 
 #### Installation of dedicated KKP seed
 > **Note:** You can follow these steps only if you have a KKP EE license with you. With KKP CE licence, you can only work with one seed (which is master-seed combo above)

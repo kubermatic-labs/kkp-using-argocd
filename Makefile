@@ -10,7 +10,7 @@ install-kkp-dev:
 	  --skip-charts='cert-manager,nginx-ingress-controller,dex'
 
 create-long-lived-master-seed-kubeconfig:
-	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig /opt/personal/k8s-adventure/src/kubeone181/k1init/vj-dev-master-kubeconfig > ./seed-ready-kube-config
+	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/dev-master/vj-dev-master-kubeconfig | base64 -w0 > ./seed-ready-kube-config
 
 # DEV Master
 deploy-argo-dev-master:
@@ -31,7 +31,7 @@ deploy-argo-apps-dev-seed:
 	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/india/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -
 
 create-long-lived-seed-kubeconfig:
-	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig /opt/personal/k8s-adventure/src/kubeone181/k1init-seed/vj-dev-seed-kubeconfig > ./seed-ready-kube-config
+	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/dev-seed/vj-dev-seed-kubeconfig > ./seed-ready-kube-config
 
 deploy-kube-prometheus-stack:
 	helm upgrade --install -n monitoring1 --create-namespace kube-prometheus-stack prometheus-community/kube-prometheus-stack -f values-kube-prometheus-stack.yaml -f values-kube-prometheus-stack-slack-config.yaml
