@@ -142,6 +142,8 @@ These names would come handy to understand below references to them and customiz
     cd <root directory of this repo>
     make deploy-argo-dev-master deploy-argo-apps-dev-master
     FIXME: move the argocd-app to be pulled from a repo? Right now referred from local in make target
+    # get argocd admin password via below command
+    kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
     ```
 1. Tag the git with right label. The make target creates a git tag with a pre-configured name: `dev-kkp-<kkp-version>` and pushes it to your git repository. This way, when you want to upgrade KKP version, you just need to update the KKP version at the top of Makefile and run this make target again.
     ```shell
@@ -168,9 +170,11 @@ These names would come handy to understand below references to them and customiz
     # above target creates a file seed-ready-kube-config with base64 encoded kubeconfig
     # Manually update the content of seed-ready-kube-config in the seed-kubeconfig-secret-self.yaml
     kubectl apply -f dev/demo-master/seed-kubeconfig-secret-self.yaml
+    # commit changes to git and push latest changes in
+    make push-git-tag-dev
     ```
 1. Sync all apps in ArgoCD by accessing ArgoCD UI and syncing apps manually
-1. Seed DNS record AFTER seed has been added (needed for usercluster creation) manual
+1. Seed DNS record AFTER seed has been added (needed for usercluster creation). Seed is added as part of ArgoCD apps reconciliation above
     ```shell
     # Apply DNS record manually in AWS Route53
     # *.self.seed.argodemo.lab.kubermatic.io
