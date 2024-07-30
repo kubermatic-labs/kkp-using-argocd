@@ -22,7 +22,7 @@ nginx:
 dex:
   ingress:
     # configure your base domain, under which the Kubermatic dashboard shall be available
-    host: vj1.lab.kubermatic.io
+    host: argodemo.lab.kubermatic.io
 
   clients:
   # The "kubermatic" client is used for logging into the Kubermatic dashboard. It always
@@ -35,8 +35,8 @@ dex:
     secret: VNfJgZlth5fJ3BpSd5QSKGwBdKeFAkGk
     RedirectURIs:
     # ensure the URLs below use the dex.ingress.host configured above
-    - https://vj1.lab.kubermatic.io
-    - https://vj1.lab.kubermatic.io/projects
+    - https://argodemo.lab.kubermatic.io
+    - https://argodemo.lab.kubermatic.io/projects
 
     # The "kubermaticIssuer" client is used for providing OIDC access to User Clusters.
     # This configuration is optional, used if the "enableOIDCKubeconfig: true" option is used in KubermaticSetting.
@@ -49,41 +49,41 @@ dex:
     secret: IcT66lr0DT1BGD8zGXICL2azgnZ57VTd
     RedirectURIs:
       # ensure the URLs below use the dex.ingress.host configured above
-      - https://vj1.lab.kubermatic.io/api/v1/kubeconfig
-      - https://vj1.lab.kubermatic.io/api/v2/kubeconfig/secret
-      - https://vj1.lab.kubermatic.io/api/v2/dashboard/login
+      - https://argodemo.lab.kubermatic.io/api/v1/kubeconfig
+      - https://argodemo.lab.kubermatic.io/api/v2/kubeconfig/secret
+      - https://argodemo.lab.kubermatic.io/api/v2/dashboard/login
 
   - id: alertmanager
     name: AlertManager
     secret: 31XJHoWbktTYBbCIHchCeAaJtepPPS1W
     RedirectURIs:
-    - https://alertmanager.vj1.lab.kubermatic.io/oauth/callback
+    - https://alertmanager.argodemo.lab.kubermatic.io/oauth/callback
   - id: grafana
     name: Grafana
     secret: noBMZ3jhWbKlep2Op9jDfDWg1DMgydCX
     RedirectURIs:
-    - https://grafana.vj1.lab.kubermatic.io/oauth/callback
+    - https://grafana.argodemo.lab.kubermatic.io/oauth/callback
   - id: prometheus
     name: Prometheus
     secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
     RedirectURIs:
-    - https://prometheus.vj1.lab.kubermatic.io/oauth/callback
+    - https://prometheus.argodemo.lab.kubermatic.io/oauth/callback
   # India seed
   - id: alertmanager_india
     name: AlertManager for India seed cluster
     secret: Xi1k5yHpMqDrfzFDnYx7X81fcWbeAhcr
     RedirectURIs:
-    - https://alertmanager.india.vj1.lab.kubermatic.io/oauth/callback
+    - https://alertmanager.india.argodemo.lab.kubermatic.io/oauth/callback
   - id: grafana_india
     name: Grafana for India seed cluster
     secret: hdNKLfJ02K5bxT1DpWxR4o1iGBg4eqqt
     RedirectURIs:
-    - https://grafana.india.vj1.lab.kubermatic.io/oauth/callback
+    - https://grafana.india.argodemo.lab.kubermatic.io/oauth/callback
   - id: prometheus_india
     name: Prometheus for India seed cluster
     secret: SRqPgRKVLg3hd8srpdhqJUYwIL1BcS58
     RedirectURIs:
-    - https://prometheus.india.vj1.lab.kubermatic.io/oauth/callback
+    - https://prometheus.india.argodemo.lab.kubermatic.io/oauth/callback
 
   # Depending on your chosen login method, you need to configure either an OAuth provider like
   # Google or GitHub, or configure a set of static passwords. Check the `charts/oauth/values.yaml`
@@ -125,7 +125,7 @@ loki:
     size: '10Gi'
 
 iap:
-  oidc_issuer_url: https://vj1.lab.kubermatic.io/dex
+  oidc_issuer_url: https://argodemo.lab.kubermatic.io/dex
   # FIXME: Need to change in production environment to use production letsencrypt.
   customProviderCA:
       secretName: letsencrypt-staging-ca-cert
@@ -147,7 +147,7 @@ iap:
       upstream_service: alertmanager.monitoring.svc.cluster.local
       upstream_port: 9093
       ingress:
-        host: "alertmanager.vj1.lab.kubermatic.io"
+        host: "alertmanager.argodemo.lab.kubermatic.io"
     grafana:
       name: grafana
       client_id: grafana
@@ -168,7 +168,7 @@ iap:
       upstream_service: grafana.monitoring.svc.cluster.local
       upstream_port: 3000
       ingress:
-        host: "grafana.vj1.lab.kubermatic.io"
+        host: "grafana.argodemo.lab.kubermatic.io"
     prometheus:
       name: prometheus
       client_id: prometheus
@@ -185,7 +185,7 @@ iap:
       upstream_service: prometheus.monitoring.svc.cluster.local
       upstream_port: 9090
       ingress:
-        host: "prometheus.vj1.lab.kubermatic.io"
+        host: "prometheus.argodemo.lab.kubermatic.io"
         annotations:
           ingress.kubernetes.io/upstream-hash-by: "ip_hash" ## needed for prometheus federations
     alertmanager1:
@@ -204,7 +204,7 @@ iap:
       upstream_service: kube-prometheus-stack-alertmanager.monitoring1.svc.cluster.local
       upstream_port: 9093
       ingress:
-        host: "alertmanager1.vj1.lab.kubermatic.io"
+        host: "alertmanager1.argodemo.lab.kubermatic.io"
 
 alertmanager:
   storageSize: 4Gi

@@ -111,12 +111,12 @@ terraform output -json > tf.json
 # Apply kubeone and download kubeconfigs
 cd ../dev-master
 ../kubeone apply -t . -m ./kubeone.yaml --verbose
-export KUBECONFIG=$PWD/vj-dev-master-kubeconfig # adjust as per cluster name
+export KUBECONFIG=$PWD/argodemo-dev-master-kubeconfig # adjust as per cluster name
 
 # in another shell
 cd ../dev-seed
 ../kubeone apply -t . -m ./kubeone.yaml --verbose
-export KUBECONFIG=$PWD/vj-dev-seed-kubeconfig  # adjust as per cluster name
+export KUBECONFIG=$PWD/argodemo-dev-seed-kubeconfig  # adjust as per cluster name
 ```
 
 This same folder structure can be further expanded to add kubeone installations for additional environments like staging and prod.
@@ -129,10 +129,10 @@ For ease of installation, I have prepared a `Makefile` to just make commands eas
 While for my demo, provided files would work, you would need to look through each file under `dev` folder and customize the values as per your need.
 
 ### Note about URLs:
-This demo codebase assumes `vj1.lab.kubermatic.io` as base URL for KKP. KKP Dashboard is available at this URL. So master argocd, all master tools like prometheus, grafana, etc are accessible at `*.vj1.lab.kubermatic.io`
+This demo codebase assumes `argodemo.lab.kubermatic.io` as base URL for KKP. KKP Dashboard is available at this URL. So master argocd, all master tools like prometheus, grafana, etc are accessible at `*.argodemo.lab.kubermatic.io`
 The seed need it's own DNS prefix which configured as `self.seed`. This prefix needs to be configured in Route53.
 
-Similarly, this demo creates 2nd seed named `india`. Thus, 2nd seed's argocd, prometheus, grafana etc are accessible at `*.india.vj1.lab.kubermatic.io`. And this seed's DNS prefix is `india.seed`.
+Similarly, this demo creates 2nd seed named `india-seed`. Thus, 2nd seed's argocd, prometheus, grafana etc are accessible at `*.india.argodemo.lab.kubermatic.io`. And this seed's DNS prefix is `india.seed`.
 
 These names would come handy to understand below references to them and customize these values as per your setup.
 
@@ -151,8 +151,8 @@ These names would come handy to understand below references to them and customiz
 1. Manually update the DNS records so that ArgoCD is accessible.
     ```shell
     # Apply DNS record manually in AWS Route53
-    # vj1.lab.kubermatic.io and *.vj1.lab.kubermatic.io
-    # now you can access ArgoCD at https://argocd.vj1.lab.kubermatic.io
+    # argodemo.lab.kubermatic.io and *.argodemo.lab.kubermatic.io
+    # now you can access ArgoCD at https://argocd.argodemo.lab.kubermatic.io
     ```
 1. Install KKP EE without helm-charts. If we want to finish the demo with separate seed, we will need Enterprise Edition KKP. You can run the demo with master-seed combo, you can use community edition of KKP.
     ```shell
@@ -167,16 +167,16 @@ These names would come handy to understand below references to them and customiz
     make create-long-lived-master-seed-kubeconfig
     # above target creates a file seed-ready-kube-config with base64 encoded kubeconfig
     # Manually update the content of seed-ready-kube-config in the seed-kubeconfig-secret-self.yaml
-    kubectl apply -f dev/vj1-master/seed-kubeconfig-secret-self.yaml
+    kubectl apply -f dev/demo-master/seed-kubeconfig-secret-self.yaml
     ```
 1. Sync all apps in ArgoCD by accessing ArgoCD UI and syncing apps manually
 1. Seed DNS record AFTER seed has been added (needed for usercluster creation) manual
     ```shell
     # Apply DNS record manually in AWS Route53
-    # *.self.seed.vj1.lab.kubermatic.io
+    # *.self.seed.argodemo.lab.kubermatic.io
     ```
 1. Now we can create user-clusters on this master-seed cluster
-1. (only for staging letsencrypt) We need to provide the staging letsencrypt cert so that monitoring IAP components can work. For this, one needs to save the certificate issuer for `https://vj1.lab.kubermatic.io/dex/` from browser / openssl and insert the certificate in `dev/common/custom-ca-bundle.yaml` for the secret `letsencrypt-staging-ca-cert` under key `ca.crt` in base64 encoded format. Post saving the file, commit the change to git and re-apply the tag via `make push-git-tag-dev` and sync the ArgoCD App .
+1. (only for staging letsencrypt) We need to provide the staging letsencrypt cert so that monitoring IAP components can work. For this, one needs to save the certificate issuer for `https://argodemo.lab.kubermatic.io/dex/` from browser / openssl and insert the certificate in `dev/common/custom-ca-bundle.yaml` for the secret `letsencrypt-staging-ca-cert` under key `ca.crt` in base64 encoded format. Post saving the file, commit the change to git and re-apply the tag via `make push-git-tag-dev` and sync the ArgoCD App .
 
 #### Installation of dedicated KKP seed
 > **Note:** You can follow these steps only if you have a KKP EE license with you. With KKP CE licence, you can only work with one seed (which is master-seed combo above)
@@ -194,22 +194,22 @@ We follow similar procedure as master-seed combo but with slightly different com
 1. Add Seed nginx-ingress DNS record
     ```shell
     # Apply DNS record manually in AWS Route53
-    # india.vj1.lab.kubermatic.io and *.india.vj1.lab.kubermatic.io
-    # now you can access ArgoCD at https://argocd.india.vj1.lab.kubermatic.io
+    # india.argodemo.lab.kubermatic.io and *.india.argodemo.lab.kubermatic.io
+    # now you can access ArgoCD at https://argocd.india.argodemo.lab.kubermatic.io
     ```
 1. Prepare kubeconfig of cluster-admin privileges so that it can be added as secret and then this cluster can be added as Seed in master cluster configuration
     ```shell
     make create-long-lived-seed-kubeconfig
 
     # NOTE: export master kubeconfig for below operation
-    kubectl apply -f dev/vj1-master/seed-kubeconfig-secret-india.yaml
+    kubectl apply -f dev/demo-master/seed-kubeconfig-secret-india.yaml
     ```
 1. Sync all apps in ArgoCD by accessing ArgoCD UI and syncing apps manually
 1. Add Seed nodeport proxy DNS record
-```shell
-# Apply DNS record manually in AWS Route53
-# *.india.seed.vj1.lab.kubermatic.io
-```
+    ```shell
+    # Apply DNS record manually in AWS Route53
+    # *.india.seed.argodemo.lab.kubermatic.io
+    ```
 1. Now we can create user-clusters on this dedicated seed cluster as well.
 
 ----

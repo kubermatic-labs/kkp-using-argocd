@@ -1,7 +1,7 @@
 # FIXME: make this chart to be part of values.yaml
 environment: dev
-seed: vj1-master
-isMasterSeed: true
+seed: india-seed
+isMasterSeed: false
 
 kkpBasePath: "."
 
@@ -11,7 +11,7 @@ valuesPathPrefix: "." # This is prefix wrt environment folder e.g. /dev/
 # KKP Core
 nginx: true
 certManager: true
-oauth: true
+oauth: false # not configuring seed-local-dex yet. Its TODO:
 seedSettings: true
 seedExtras: true
 
@@ -35,16 +35,3 @@ velero: true
 
 # storage
 minio: true
-
-#user cluster mla
-userMla:
-  enable: true # master switch to control whether you want to deploy user-cluster MLA or not
-  minio: true
-  minioLifecycleMgr: true
-  grafana: true
-  consul: true
-  cortex: true
-  lokiDistributed: true
-  alertmanagerProxy: true
-  iapMla: true
-  secrets: true

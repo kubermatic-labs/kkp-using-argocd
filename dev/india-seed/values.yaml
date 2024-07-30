@@ -3,7 +3,7 @@ promtail:
     seed: india
 
 iap:
-  oidc_issuer_url: https://vj1.lab.kubermatic.io/dex
+  oidc_issuer_url: https://argodemo.lab.kubermatic.io/dex
   # FIXME: Need to change in production environment to use production letsencrypt.
   customProviderCA:
       secretName: letsencrypt-staging-ca-cert
@@ -24,7 +24,7 @@ iap:
       upstream_service: alertmanager.monitoring.svc.cluster.local
       upstream_port: 9093
       ingress:
-        host: "alertmanager.india.vj1.lab.kubermatic.io"
+        host: "alertmanager.india.argodemo.lab.kubermatic.io"
 
     grafana:
       name: grafana
@@ -45,7 +45,7 @@ iap:
       upstream_service: grafana.monitoring.svc.cluster.local
       upstream_port: 3000
       ingress:
-        host: "grafana.india.vj1.lab.kubermatic.io"
+        host: "grafana.india.argodemo.lab.kubermatic.io"
 
     prometheus:
       name: prometheus
@@ -62,7 +62,7 @@ iap:
       upstream_service: prometheus.monitoring.svc.cluster.local
       upstream_port: 9090
       ingress:
-        host: "prometheus.india.vj1.lab.kubermatic.io"
+        host: "prometheus.india.argodemo.lab.kubermatic.io"
         annotations:
           ingress.kubernetes.io/upstream-hash-by: "ip_hash" ## needed for prometheus federations
 

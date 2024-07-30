@@ -18,11 +18,11 @@ server:
       cert-manager.io/cluster-issuer: letsencrypt-prod
     # supply this via --set so that we can use single ArgoCD def for all environments
     # hosts: 
-    # - argocd.vj1.lab.kubermatic.io
+    # - argocd.argodemo.lab.kubermatic.io
     tls:
     - secretName: argocd-tls-certificate
       # hosts:
-      # - argocd.vj1.lab.kubermatic.io
+      # - argocd.argodemo.lab.kubermatic.io
 # To be used for simpler local argocd setup
 #     paths:
 #       - /argocd/

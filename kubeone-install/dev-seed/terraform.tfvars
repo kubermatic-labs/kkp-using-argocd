@@ -1,4 +1,4 @@
-cluster_name = "vj-dev-seed"
+cluster_name = "argodemo-dev-seed"
 
 cluster_autoscaler_max_replicas    = "10"
 cluster_autoscaler_min_replicas    = "2"
