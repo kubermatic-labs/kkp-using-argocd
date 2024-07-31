@@ -1,8 +1,13 @@
 KKP_VERSION=v2.25.5
-# TODO: To test KKP upgrade scenario
+# To upgrade KKP, update the version of kkp here.
 #KKP_VERSION=v2.25.6
-INSTALL_DIR=../kubermatic/releases/${KKP_VERSION}
+INSTALL_DIR=./kubermatic/releases/${KKP_VERSION}
 
+#use e.g. for MAC OS: BIN_ARCH=darwin-amd64 make download-kkp-release
+BIN_ARCH ?= linux-amd64
+download-kkp-release:
+	mkdir -p ${INSTALL_DIR}
+	wget https://github.com/kubermatic/kubermatic/releases/download/${KKP_VERSION}/kubermatic-ee-${KKP_VERSION}-${BIN_ARCH}.tar.gz -O- | tar -xz --directory ./kubermatic/releases/${KKP_VERSION}/
 
 install-kkp-dev:
 	${INSTALL_DIR}/kubermatic-installer deploy \
@@ -17,7 +22,9 @@ deploy-argo-dev-master:
 	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.argodemo.lab.kubermatic.io' --set 'server.ingress.tls[0].hosts[0]=argocd.argodemo.lab.kubermatic.io'
 
 deploy-argo-apps-dev-master:
-	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/demo-master/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -
+	helm repo add dharapvj https://dharapvj.github.io/helm-charts/
+	helm repo update dharapvj
+	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/demo-master/argoapps-values.yaml dharapvj/argocd-apps | kubectl apply -f -
 
 push-git-tag-dev:
 	git tag -f dev-kkp-${KKP_VERSION}
@@ -28,7 +35,9 @@ deploy-argo-dev-seed:
 	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.india.argodemo.lab.kubermatic.io' --set 'server.ingress.tls[0].hosts[0]=argocd.india.argodemo.lab.kubermatic.io'
 
 deploy-argo-apps-dev-seed:
-	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/india-seed/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -
+	helm repo add dharapvj https://dharapvj.github.io/helm-charts/
+	helm repo update dharapvj
+	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/india-seed/argoapps-values.yaml dharapvj/argocd-apps | kubectl apply -f -
 
 create-long-lived-seed-kubeconfig:
 	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/dev-seed/argodemo-dev-seed-kubeconfig > ./seed-ready-kube-config

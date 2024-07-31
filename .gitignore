@@ -1,2 +1,3 @@
 EXTRAS
 **/.terraform
+kubermatic/releases/*

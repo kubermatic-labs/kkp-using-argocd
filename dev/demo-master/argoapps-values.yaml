@@ -1,4 +1,3 @@
-# FIXME: make this chart to be part of values.yaml
 environment: dev
 seed: demo-master
 isMasterSeed: true
