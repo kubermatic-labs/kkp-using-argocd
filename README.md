@@ -161,8 +161,8 @@ These names would come handy to understand below references to them and customiz
 1. Add seed for self (need manual update of kubeconfig in seed.yaml)
     ```shell
     make create-long-lived-master-seed-kubeconfig
-    # above target creates a file seed-ready-kube-config with base64 encoded kubeconfig
-    # Manually update the content of seed-ready-kube-config in the seed-kubeconfig-secret-self.yaml
+    # Above make target creates a file seed-ready-kube-config with base64 encoded kubeconfig
+    # Manually update the content of seed-ready-kube-config in the ./dev/demo-master/seed-kubeconfig-secret-self.yaml
     kubectl apply -f dev/demo-master/seed-kubeconfig-secret-self.yaml
     # commit changes to git and push latest changes in
     make push-git-tag-dev
@@ -203,6 +203,8 @@ We execute most of the below commands, unless noted otherwise, in 2nd shell wher
 1. Prepare kubeconfig of cluster-admin privileges so that it can be added as secret and then this cluster can be added as Seed in master cluster configuration
     ```shell
     make create-long-lived-seed-kubeconfig
+    # Above make target creates a file seed-ready-kube-config with base64 encoded kubeconfig
+    # Manually update the content of seed-ready-kube-config in the ./dev/demo-master/seed-kubeconfig-secret-india.yaml
 
     # NOTE: export master kubeconfig for below operation
     kubectl apply -f dev/demo-master/seed-kubeconfig-secret-india.yaml

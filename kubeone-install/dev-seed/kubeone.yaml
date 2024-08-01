@@ -11,13 +11,9 @@ cloudProvider:
 containerRuntime:
   containerd: {}
 
-clusterNetwork:
-  cni:
-    external: {}
-  
 addons:
   enable: true
   addons:
     - name: default-storage-class
     - name: cluster-autoscaler
-    - name: calico-vxlan
+    - name: nodelocaldns

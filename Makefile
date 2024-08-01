@@ -40,7 +40,7 @@ deploy-argo-apps-dev-seed:
 	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/india-seed/argoapps-values.yaml dharapvj/argocd-apps | kubectl apply -f -
 
 create-long-lived-seed-kubeconfig:
-	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/dev-seed/argodemo-dev-seed-kubeconfig > ./seed-ready-kube-config
+	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/dev-seed/argodemo-dev-seed-kubeconfig | base64 -w0 > ./seed-ready-kube-config
 
 deploy-kube-prometheus-stack:
 	helm upgrade --install -n monitoring1 --create-namespace kube-prometheus-stack prometheus-community/kube-prometheus-stack -f values-kube-prometheus-stack.yaml -f values-kube-prometheus-stack-slack-config.yaml
