@@ -174,6 +174,7 @@ These names would come handy to understand below references to them and customiz
     # Loadbalancer details from k get svc -n kubermatic nodeport-proxy
     # *.self.seed.argodemo.lab.kubermatic.io
     ```
+1. Access KKP dashboard at https://argodemo.lab.kubermatic.io
 1. Now we can create user-clusters on this master-seed cluster
 1. (only for staging letsencrypt) We need to provide the staging letsencrypt cert so that monitoring IAP components can work. For this, one needs to save the certificate issuer for `https://argodemo.lab.kubermatic.io/dex/` from browser / openssl and insert the certificate in `dev/common/custom-ca-bundle.yaml` for the secret `letsencrypt-staging-ca-cert` under key `ca.crt` in base64 encoded format. Post saving the file, commit the change to git and re-apply the tag via `make push-git-tag-dev` and sync the ArgoCD App .
 
@@ -213,6 +214,7 @@ We execute most of the below commands, unless noted otherwise, in 2nd shell wher
 1. Add Seed nodeport proxy DNS record
     ```shell
     # Apply DNS record manually in AWS Route53
+    # Loadbalancer details from k get svc -n kubermatic nodeport-proxy
     # *.india.seed.argodemo.lab.kubermatic.io
     ```
 1. Now we can create user-clusters on this dedicated seed cluster as well.
