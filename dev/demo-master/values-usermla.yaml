@@ -37,7 +37,7 @@ iap:
       upstream_service: grafana.mla.svc.cluster.local
       upstream_port: 80
       ingress:
-        host: "grafana-user.argodemo.lab.kubermatic.io"
+        host: "grafana-user.self.seed.argodemo.lab.kubermatic.io"
 
     alertmanager:
       name: alertmanager
@@ -58,4 +58,4 @@ iap:
       upstream_service: alertmanager-proxy.mla.svc.cluster.local
       upstream_port: 8080
       ingress:
-        host: "alertmanager-user.argodemo.lab.kubermatic.io"
+        host: "alertmanager-user.self.seed.argodemo.lab.kubermatic.io"
