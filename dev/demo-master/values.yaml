@@ -84,6 +84,19 @@ dex:
     secret: SRqPgRKVLg3hd8srpdhqJUYwIL1BcS58
     RedirectURIs:
     - https://prometheus.india.argodemo.lab.kubermatic.io/oauth/callback
+  # user-mla - self
+  - id: grafana_user_self
+    name: Grafana for Self User clusters
+    secret: xK7EjZM2gmp3DRrl0APlMkNDcS1hEf7m
+    RedirectURIs:
+    - https://grafana-user.self.seed.argodemo.lab.kubermatic.io/oauth/callback
+  - id: alertmanager_user_self
+    name: AlertManager for Self User clusters
+    secret: LBZSAXMklV6Z1OWqHF2Fphgale1zY4TP
+    RedirectURIs:
+    - https://alertmanager-user.self.seed.argodemo.lab.kubermatic.io/oauth/callback
+
+  # user-mla - india - FIXME:
 
   # Depending on your chosen login method, you need to configure either an OAuth provider like
   # Google or GitHub, or configure a set of static passwords. Check the `charts/oauth/values.yaml`

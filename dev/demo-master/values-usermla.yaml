@@ -9,3 +9,53 @@ cortex:
   store_gateway:
     persistentVolume:
       size: 4Gi
+
+iap:
+  oidc_issuer_url: https://argodemo.lab.kubermatic.io/dex
+  # FIXME: Need to change in production environment to use production letsencrypt.
+  customProviderCA:
+      secretName: letsencrypt-staging-ca-cert
+      secretKey: ca.crt
+  deployments:
+    grafana:
+      name: grafana
+      replicas: 1
+      client_id: grafana_user_self
+      client_secret: xK7EjZM2gmp3DRrl0APlMkNDcS1hEf7m
+      encryption_key: zg4HJdRpv2MvCIqGQvFoHZhUkYQXCw2C
+      config:
+        scope: "groups openid email"
+        email_domains:
+          - "*"
+        ## do not route health endpoint through the proxy
+        skip_auth_regex:
+          - "/api/health"
+        ## auto-register users based on their email address
+        ## Grafana is configured to look for the X-Forwarded-Email header
+        pass_user_headers: true
+        upstream_timeout: "5m"
+      upstream_service: grafana.mla.svc.cluster.local
+      upstream_port: 80
+      ingress:
+        host: "grafana-user.argodemo.lab.kubermatic.io"
+
+    alertmanager:
+      name: alertmanager
+      replicas: 1
+      client_id: alertmanager_user_self
+      client_secret: LBZSAXMklV6Z1OWqHF2Fphgale1zY4TP
+      encryption_key: XeX4PLvKY6XSOeaTPUt6YxluWxqylGue
+      config:
+        scope: "groups openid email"
+        email_domains:
+          - "*"
+        ## do not route health endpoint through the proxy
+        skip_auth_regex:
+          - "/ready"
+        ## auto-register users based on their email address
+        ## Grafana is configured to look for the X-Forwarded-Email header
+        pass_user_headers: true
+      upstream_service: alertmanager-proxy.mla.svc.cluster.local
+      upstream_port: 8080
+      ingress:
+        host: "alertmanager-user.argodemo.lab.kubermatic.io"
