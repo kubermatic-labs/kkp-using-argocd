@@ -41,6 +41,11 @@ spec:
       name: "letsencrypt-prod"
     className: nginx
 
+  featureGates:
+    OIDCKubeCfgEndpoint: true
+    OpenIDAuthPlugin: true
+    UserClusterMLA: true
+
   # These secret keys configure the way components communicate with Dex.
   auth:
     clientID: kubermatic
