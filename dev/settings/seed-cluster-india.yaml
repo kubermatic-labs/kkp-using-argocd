@@ -46,7 +46,7 @@ spec:
     defaultDestination: default
     destinations:
       default:
-        bucketName: kubermatic-etcd-backups
+        bucketName: usercluster-etcd-backups
         endpoint: http://minio.minio.svc.cluster.local:9000
         credentials:
           name: kubermatic-s3-credentials
