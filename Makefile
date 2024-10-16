@@ -1,18 +1,37 @@
-KKP_VERSION=v2.25.5
+KKP_VERSION=v2.25.11
+K1_VERSION=1.8.3
 # To upgrade KKP, update the version of kkp here.
 #KKP_VERSION=v2.25.6
-INSTALL_DIR=./kubermatic/releases/${KKP_VERSION}
+INSTALL_DIR=./binaries/kubermatic/releases/${KKP_VERSION}
+KUBEONE_INSTALL_DIR=./binaries/kubeone/releases/${K1_VERSION}
 
 #use e.g. for MAC OS: BIN_ARCH=darwin-amd64 make download-kkp-release
 BIN_ARCH ?= linux-amd64
 download-kkp-release:
-	mkdir -p ${INSTALL_DIR}
-	wget https://github.com/kubermatic/kubermatic/releases/download/${KKP_VERSION}/kubermatic-ee-${KKP_VERSION}-${BIN_ARCH}.tar.gz -O- | tar -xz --directory ./kubermatic/releases/${KKP_VERSION}/
+	mkdir -p ${INSTALL_DIR}/
+	wget https://github.com/kubermatic/kubermatic/releases/download/${KKP_VERSION}/kubermatic-ee-${KKP_VERSION}-${BIN_ARCH}.tar.gz -O- | tar -xz --directory ${INSTALL_DIR}/
+
+download-kubeone-release:
+	mkdir -p ${KUBEONE_INSTALL_DIR}
+	curl -LO "https://github.com/kubermatic/kubeone/releases/download/v${K1_VERSION}/kubeone_${K1_VERSION}_linux_amd64.zip" && \
+    unzip kubeone_${K1_VERSION}_linux_amd64.zip -d kubeone_${K1_VERSION}_linux_amd64 && \
+    mv kubeone_${K1_VERSION}_linux_amd64/kubeone ${KUBEONE_INSTALL_DIR} && rm -rf kubeone_${K1_VERSION}_linux_amd64 kubeone_${K1_VERSION}_linux_amd64.zip
+
+k1-apply-master:
+	cd kubeone-install/dev-master && terraform init && terraform apply &&../../${KUBEONE_INSTALL_DIR}/kubeone apply -t . -m kubeone.yaml
+
+k1-detroy-master:
+	cd kubeone-install/dev-master && ../../${KUBEONE_INSTALL_DIR}/kubeone 
+	cd kubeone-install/dev-master && terraform init && terraform destroy
 
 install-kkp-dev:
 	${INSTALL_DIR}/kubermatic-installer deploy \
 	  --charts-directory ${INSTALL_DIR}/charts --config ./dev/demo-master/k8cConfig.yaml --helm-values ./dev/demo-master/values.yaml --storageclass aws \
 	  --skip-charts='cert-manager,nginx-ingress-controller,dex'
+
+install-kkp-dev-user-mla:
+	${INSTALL_DIR}/kubermatic-installer deploy usercluster-mla \
+	  --charts-directory ${INSTALL_DIR}/charts --config ./dev/demo-master/k8cConfig.yaml --helm-values ./dev/demo-master/values-usermla.yaml
 
 create-long-lived-master-seed-kubeconfig:
 	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/dev-master/argodemo-dev-master-kubeconfig | base64 -w0 > ./seed-ready-kube-config

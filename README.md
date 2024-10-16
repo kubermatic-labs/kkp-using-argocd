@@ -1,7 +1,7 @@
 # How to setup the ArgoCD based KKP installation
 
 ## Need of GitOps solution
-Kubermatic Kubernetes Platform is very versatile solution to create and manage Kuberntes clusters (user-clusters) across plethora of Cloud providers and on-prem virtualizaton platforms. But this flexibility also means that there are good amount of moving parts. Kubermatic Kubernetes Platform (KKP) provides various tools to manage user-clusters across various regions and cloud.
+Kubermatic Kubernetes Platform is very versatile solution to create and manage Kubernetes clusters (user-clusters) across plethora of Cloud providers and on-prem virtualizaton platforms. But this flexibility also means that there are good amount of moving parts. Kubermatic Kubernetes Platform (KKP) provides various tools to manage user-clusters across various regions and cloud.
 
 This is why, if we utilize a GitOps solution to manage KKP and it's upgrades, KKP administrator would have better peace of mind. While KKP installation does not come ready with a GitOps solution, we have provided [an unofficial component for ArgoCD](https://github.com/kubermatic/community-components/tree/master/ArgoCD-managed-seed) based KKP management.
 
@@ -18,10 +18,25 @@ In order to setup and manage KKP using a GitOps solution, one must first know so
 We will install KKP along the way so, we do not need a running KKP installation. But if you already have KKP installation running, you can still make use of this guide to onboard your existing KKP installation to ArgoCD. This might involve in directory re-organization though.
 
 ## Introduction
+
+General concept of how KKP installations are and how ArgoCD will be deployed and what KKP components it will manage can be seen in below diagram.
+![Concept](@/images/tutorials/gitops-argocd/KKP-GitOps-ArgoCD.drawio.png "Concept - KKP GitOps using ArgoCD")
+
 For the demonstration, 
-1. we will use 2 kubernetes clusters in AWS (created using Kubeone but they could be any Kubernetes clusters as long as they have a network path to reach each other)
-1. install KKP master on one cluster (c1) and also use this cluster as seed (master-seed combo cluster)
+1. We will use 2 kubernetes clusters in AWS (created using Kubeone but they could be any Kubernetes clusters on any of the supported cloud / on-prem providers as long as they have a network path to reach each other)
+1. Install KKP master on one cluster (c1) and also use this cluster as seed (master-seed combo cluster)
 1. Make 2nd cluster (c2) as dedicated seed
+1. ArgoCD will be installed in each of the seed (and master/seed) to manage the seed's KKP components
+
+A highlevel procedure to get ArgoCD to manage the seed would be as follows:
+1. Setup a kubernetes cluster to be used as master seed combo
+1. Install KKP helm chart and KKP ArgoCD Applications (another helm chart)
+1. Install KKP on the master seed
+1. Setup DNS records and Git repository tag so that ArgoCD can sync
+1. Sync the applications
+1. Repeat the procedure for 2nd seed (except installation of KKP on the seed)
+1. Add kkp seed record in master seed config files so that seed cluster connects with master.
+1. Commit, push and re-tag the above change so that you can add the seed to master via ArgoCD UI
 
 Folder and File Structure section in the [README.md of ArgoCD Apps Component](https://github.com/kubermatic/community-components/blob/master/ArgoCD-managed-seed/README.md) explains what files should be present for each seed in what folders and how to customize behavior of ArgoCD apps installation.
 
@@ -49,7 +64,7 @@ We will install ArgoCD on both the clusters and we will install following compon
     1. Loki
 1. S3 like object storage - minio
 1. User-cluster mla components
-    1. Minio and Minio Lifecycle Mananger
+    1. Minio and Minio Lifecycle Manager
     1. Grafana
     1. Consul
     1. Cortex
@@ -67,7 +82,7 @@ We will install ArgoCD on both the clusters and we will install following compon
 
 Use kubeone to create 2 clusters in DEV env - master-seed combo (c1) and regular seed (c2). Steps below are generic to any kubeone installation. a) We create basic VMs in AWS using terraform and then b) Use kubeone to bootstrap the control plane on these VMs and then rollout worker node machines.
 
-**Note:** The sample code provided here to create kubernetes clusters uses single VM control-plane. This is NOT recommeded in any way as production. Always use HA control-plane for any production grade kubernetes installation.
+**Note:** The sample code provided here to create kubernetes clusters uses single VM control-plane. This is NOT recommended in any way as production. Always use HA control-plane for any production grade kubernetes installation.
 
 You should be looking at `terraform.tfvars` and `kubeone.yaml` files to customize these folder as per your needs.
 
@@ -118,7 +133,7 @@ export KUBECONFIG=$PWD/argodemo-dev-seed-kubeconfig  # adjust as per cluster nam
 This same folder structure can be further expanded to add kubeone installations for additional environments like staging and prod.
 
 ### Installation of KKP with Argo Installation Steps
-For ease of installation, I have prepared a `Makefile` to just make commands easier to read. Internally, it just depends on helm, kubectl and kubermatic-installer binaries. But you will need to look at `make` target definitions in `Makefile` to adjust DNS names.
+For ease of installation, a `Makefile` has been provided to just make commands easier to read. Internally, it just depends on helm, kubectl and kubermatic-installer binaries. But you will need to look at `make` target definitions in `Makefile` to adjust DNS names.
 
 While for my demo, provided files would work, you would need to look through each file under `dev` folder and customize the values as per your need.
 
@@ -236,10 +251,9 @@ We execute most of the below commands, unless noted otherwise, in 2nd shell wher
     1. rollout argo-apps again and sync all apps on both seeds.
 
 
-## Further improvements which still to be done
+## Further improvements which are on horizon
 1. Use Secrets folder (e.g. with git-crypt)
 1. Sync Presets
 1. Thanos Application
-1. Can we look at moving Argo App templates to ApplicationSet / App of Apps?
-1. Optional External-DNS app so that DNS entries can be done separately.
-1. Can we run make targets via Github actions?
+1. Optional External-DNS app so that DNS entries can be done separately
+1. Run targets via Github Actions
