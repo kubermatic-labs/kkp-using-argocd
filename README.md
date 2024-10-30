@@ -19,8 +19,8 @@ We will install KKP along the way, so, we do not need a running KKP installation
 
 ## Introduction
 
-General concept of how KKP installations are and how ArgoCD will be deployed and what KKP components it will manage can be seen in below diagram.
-![Concept](@/images/tutorials/gitops-argocd/KKP-GitOps-ArgoCD.drawio.png "Concept - KKP GitOps using ArgoCD")
+Below diagram shows the general concept of the setup. It shows how KKP installations and ArgoCD will be deployed and what KKP components will be managed by ArgoCD in each seed.
+![Concept](./docs/kkp-gitops-argocd.png)
 
 For the demonstration, 
 1. We will use 2 kubernetes clusters in AWS (created using Kubeone but they could be any Kubernetes clusters on any of the supported cloud / on-prem providers as long as they have a network path to reach each other)
@@ -112,24 +112,8 @@ kubeone-install
 
 # Setup CP machines and other infra
 export AWS_PROFILE=<your AWS profile>
-cd kubeone-install/dev-master
-terraform init && terraform plan
-terraform apply -auto-approve
-terraform output -json > tf.json
-cd ../dev-seed
-terraform init && terraform plan
-terraform apply -auto-approve
-terraform output -json > tf.json
-
-# Apply kubeone and download kubeconfigs
-cd ../dev-master
-../kubeone apply -t . -m ./kubeone.yaml --verbose
-export KUBECONFIG=$PWD/argodemo-dev-master-kubeconfig # adjust as per cluster name
-
-# in another shell
-cd ../dev-seed
-../kubeone apply -t . -m ./kubeone.yaml --verbose
-export KUBECONFIG=$PWD/argodemo-dev-seed-kubeconfig  # adjust as per cluster name
+make k1-apply-master
+make k1-apply-seed
 ```
 
 This same folder structure can be further expanded to add kubeone installations for additional environments like staging and prod.
@@ -176,7 +160,6 @@ These names would come handy to understand below references to them and customiz
 1. Add seed for self (need manual update of kubeconfig in seed.yaml)
     ```shell
     make create-long-lived-master-seed-kubeconfig
-    kubectl apply -f dev/demo-master/seed-kubeconfig-secret-self.yaml
     # commit changes to git and push latest changes in
     make push-git-tag-dev
     ```
@@ -220,8 +203,6 @@ We execute most of the below commands, unless noted otherwise, in 2nd shell wher
 1. Prepare kubeconfig of cluster-admin privileges so that it can be added as secret and then this cluster can be added as Seed in master cluster configuration
     ```shell
     make create-long-lived-seed-kubeconfig
-    # NOTE: export master kubeconfig for below operation
-    kubectl apply -f dev/demo-master/seed-kubeconfig-secret-india.yaml
     # commit changes to git and push latest changes in
     make push-git-tag-dev
     ```
@@ -235,10 +216,10 @@ We execute most of the below commands, unless noted otherwise, in 2nd shell wher
 1. Now we can create user-clusters on this dedicated seed cluster as well.
 
 FIXME:
-1. add export of kubeconfig with right path from root dir.
 1. metering pod error?
 1. No velero backups?
-1. Custom CA Cert demo?
+1. move ClusterIssuer to common? so that it gets auto installed via seed-extras Apps.
+1. external-dns for dns entries?
 
 > NOTE: Sometimes, we get weird errors about timeouts. We need to restart node-local-dns daemonset and/or coredns / cluster-autoscaler deployment to resolve these errors.
 

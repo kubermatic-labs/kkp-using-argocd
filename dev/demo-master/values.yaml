@@ -25,8 +25,7 @@ dex:
     host: argodemo.lab.kubermatic.io
 
   clients:
-  # The "kubermatic" client is used for logging into the Kubermatic dashboard. It always
-  # needs to be configured.
+  # The "kubermatic" client is used for logging into the Kubermatic dashboard. It always needs to be configured.
   - id: kubermatic
     name: Kubermatic
     # Generate a secure secret key
