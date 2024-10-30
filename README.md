@@ -157,8 +157,11 @@ These names would come handy to understand below references to them and customiz
 1. ArgoCD syncs nginx ingress and cert-manager automatically
 1. Manually update the DNS records so that ArgoCD is accessible.
     ```shell
-    # Apply below DNS CNAME record manually in AWS Route53
-    # argodemo.lab.kubermatic.io and *.argodemo.lab.kubermatic.io
+    # Apply below DNS CNAME record manually in AWS Route53 for below:
+    #   argodemo.lab.kubermatic.io
+    #   *.argodemo.lab.kubermatic.io
+    #   grafana-user.self.seed.argodemo.lab.kubermatic.io
+    #   alertmanager-user.self.seed.argodemo.lab.kubermatic.io
     # You can get load balancer details from `k get svc -n nginx-ingress-controller nginx-ingress-controller`
     # After DNS setup, you can access ArgoCD at https://argocd.argodemo.lab.kubermatic.io
     ```
@@ -208,7 +211,9 @@ We execute most of the below commands, unless noted otherwise, in 2nd shell wher
 1. Add Seed nginx-ingress DNS record
     ```shell
     # Apply below DNS CNAME record manually in AWS Route53
-    # *.india.argodemo.lab.kubermatic.io
+    #   *.india.argodemo.lab.kubermatic.io
+    #   grafana-user.india.seed.argodemo.lab.kubermatic.io
+    #   alertmanager-user.india.seed.argodemo.lab.kubermatic.io
     # You can get load balancer details from `k get svc -n nginx-ingress-controller nginx-ingress-controller`
     # After DNS setup, you can access the seed ArgoCD at https://argocd.india.argodemo.lab.kubermatic.io
     ```
@@ -228,6 +233,12 @@ We execute most of the below commands, unless noted otherwise, in 2nd shell wher
     # Loadbalancer details from `k get svc -n kubermatic nodeport-proxy`
     ```
 1. Now we can create user-clusters on this dedicated seed cluster as well.
+
+FIXME:
+1. add export of kubeconfig with right path from root dir.
+1. metering pod error?
+1. No velero backups?
+1. Custom CA Cert demo?
 
 > NOTE: Sometimes, we get weird errors about timeouts. We need to restart node-local-dns daemonset and/or coredns / cluster-autoscaler deployment to resolve these errors.
 

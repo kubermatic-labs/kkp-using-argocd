@@ -13,13 +13,11 @@ spec:
       metering-weekly:
         interval: 7
         schedule: 0 6 * * 1
-      # Monthly metering reports will be generated using a custom cronjob till we upgrade to a KKP version that has
-      # changes for https://github.com/kubermatic/kubermatic/issues/12542 in it.
-      # metering-monthly:
-      #   interval: 30
-      #   schedule: 0 6 1 * *
+      metering-monthly:
+        interval: 30
+        schedule: 0 6 1 * *
     storageClassName: kubermatic-fast
-    storageSize: 100Gi
+    storageSize: 10Gi
   # Optional: Country of the seed as ISO-3166 two-letter code, e.g. DE or UK.
   # For informational purposes in the Kubermatic dashboard only.
   country: "IN"
