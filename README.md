@@ -208,16 +208,13 @@ We execute most of the below commands, unless noted otherwise, in 2nd shell wher
 1. Add Seed nginx-ingress DNS record
     ```shell
     # Apply below DNS CNAME record manually in AWS Route53
-    # india.argodemo.lab.kubermatic.io and *.india.argodemo.lab.kubermatic.io
+    # *.india.argodemo.lab.kubermatic.io
     # You can get load balancer details from `k get svc -n nginx-ingress-controller nginx-ingress-controller`
     # After DNS setup, you can access the seed ArgoCD at https://argocd.india.argodemo.lab.kubermatic.io
     ```
 1. Prepare kubeconfig of cluster-admin privileges so that it can be added as secret and then this cluster can be added as Seed in master cluster configuration
     ```shell
     make create-long-lived-seed-kubeconfig
-    # Above make target creates a file seed-ready-kube-config with base64 encoded kubeconfig
-    # Manually update the content of seed-ready-kube-config in the `./dev/demo-master/seed-kubeconfig-secret-india.yaml`
-
     # NOTE: export master kubeconfig for below operation
     kubectl apply -f dev/demo-master/seed-kubeconfig-secret-india.yaml
     # commit changes to git and push latest changes in
