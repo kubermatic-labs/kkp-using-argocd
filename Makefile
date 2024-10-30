@@ -24,18 +24,26 @@ k1-detroy-master:
 	cd kubeone-install/dev-master && ../../${KUBEONE_INSTALL_DIR}/kubeone reset -t . -m kubeone.yaml
 	cd kubeone-install/dev-master && terraform init && terraform destroy
 
+k1-apply-seed:
+	cd kubeone-install/dev-seed && terraform init && terraform apply &&../../${KUBEONE_INSTALL_DIR}/kubeone apply -t . -m kubeone.yaml
+
+k1-detroy-seed:
+	cd kubeone-install/dev-seed && ../../${KUBEONE_INSTALL_DIR}/kubeone reset -t . -m kubeone.yaml
+	cd kubeone-install/dev-seed && terraform init && terraform destroy
+
 install-kkp-dev:
 	${INSTALL_DIR}/kubermatic-installer deploy \
 	  --charts-directory ${INSTALL_DIR}/charts --config ./dev/demo-master/k8cConfig.yaml --helm-values ./dev/demo-master/values.yaml --storageclass aws \
 	  --skip-charts='cert-manager,nginx-ingress-controller,dex'
 
-install-kkp-dev-user-mla:
-	${INSTALL_DIR}/kubermatic-installer deploy usercluster-mla \
-	  --charts-directory ${INSTALL_DIR}/charts --config ./dev/demo-master/k8cConfig.yaml --helm-values ./dev/demo-master/values-usermla.yaml
+# install-kkp-dev-user-mla:
+# 	${INSTALL_DIR}/kubermatic-installer deploy usercluster-mla \
+# 	  --charts-directory ${INSTALL_DIR}/charts --config ./dev/demo-master/k8cConfig.yaml --helm-values ./dev/demo-master/values-usermla.yaml
 
 create-long-lived-master-seed-kubeconfig:
 	@kubeconfig=$$(${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/dev-master/argodemo-dev-master-kubeconfig | base64 -w0) && \
 	sed -i "/kubeconfig: /s/: .*/: `echo $$kubeconfig`/" dev/demo-master/seed-kubeconfig-secret-self.yaml
+
 # DEV Master
 deploy-argo-dev-master:
 	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.argodemo.lab.kubermatic.io' --set 'server.ingress.tls[0].hosts[0]=argocd.argodemo.lab.kubermatic.io'
@@ -56,19 +64,20 @@ deploy-argo-dev-seed:
 deploy-argo-apps-dev-seed:
 	helm repo add dharapvj https://dharapvj.github.io/helm-charts/
 	helm repo update dharapvj
-	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/india-seed/argoapps-values.yaml dharapvj/argocd-apps | kubectl apply -f -
+	helm upgrade --install kkp-argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/india-seed/argoapps-values.yaml dharapvj/argocd-apps
 
 create-long-lived-seed-kubeconfig:
-	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/dev-seed/argodemo-dev-seed-kubeconfig | base64 -w0 > ./seed-ready-kube-config
+	@kubeconfig=$$(${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/dev-seed/argodemo-dev-seed-kubeconfig | base64 -w0) && \
+	sed -i "/kubeconfig: /s/: .*/: `echo $$kubeconfig`/" dev/demo-master/seed-kubeconfig-secret-india.yaml
 
-deploy-kube-prometheus-stack:
-	helm upgrade --install -n monitoring1 --create-namespace kube-prometheus-stack prometheus-community/kube-prometheus-stack -f values-kube-prometheus-stack.yaml -f values-kube-prometheus-stack-slack-config.yaml
+# deploy-kube-prometheus-stack:
+# 	helm upgrade --install -n monitoring1 --create-namespace kube-prometheus-stack prometheus-community/kube-prometheus-stack -f values-kube-prometheus-stack.yaml -f values-kube-prometheus-stack-slack-config.yaml
 
-### Local testing
-create-kind-cluster:
-	kind create cluster --config=./kind-install/cluster-nodeport.yaml --image kindest/node:v1.27.3
+# ### Local testing
+# create-kind-cluster:
+# 	kind create cluster --config=./kind-install/cluster-nodeport.yaml --image kindest/node:v1.27.3
 
-deploy-argo-kind-cluster:
-	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.dreamit.local' --set 'server.ingress.tls[0].hosts[0]=argocd.dreamit.local'
-deploy-argo-apps-kind-cluster:
-	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/kind/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -
+# deploy-argo-kind-cluster:
+# 	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.dreamit.local' --set 'server.ingress.tls[0].hosts[0]=argocd.dreamit.local'
+# deploy-argo-apps-kind-cluster:
+# 	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/kind/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -

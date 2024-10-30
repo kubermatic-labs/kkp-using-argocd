@@ -1,0 +1,61 @@
+# To make AWS io1 disk happy 
+cortex:
+  alertmanager:
+    persistentVolume:
+      size: 4Gi
+  compactor:
+    persistentVolume:
+      size: 4Gi
+  store_gateway:
+    persistentVolume:
+      size: 4Gi
+
+iap:
+  oidc_issuer_url: https://argodemo.lab.kubermatic.io/dex
+  # FIXME: Need to change in production environment to use production letsencrypt.
+  customProviderCA:
+      secretName: letsencrypt-staging-ca-cert
+      secretKey: ca.crt
+  deployments:
+    grafana:
+      name: grafana
+      replicas: 1
+      client_id: grafana_user_india
+      client_secret: mZUKpqpmIbBrlzk4dJVfku7s8srKmZBa
+      encryption_key: R2yQna44Xji45jTZasVzClN4eJvFPHci
+      config:
+        scope: "groups openid email"
+        email_domains:
+          - "*"
+        ## do not route health endpoint through the proxy
+        skip_auth_regex:
+          - "/api/health"
+        ## auto-register users based on their email address
+        ## Grafana is configured to look for the X-Forwarded-Email header
+        pass_user_headers: true
+        upstream_timeout: "5m"
+      upstream_service: grafana.mla.svc.cluster.local
+      upstream_port: 80
+      ingress:
+        host: "grafana-user.india.seed.argodemo.lab.kubermatic.io"
+
+    alertmanager:
+      name: alertmanager
+      replicas: 1
+      client_id: alertmanager_user_india
+      client_secret: EYWeTkBfL4FdUBkxX2nievTj1JqzW5ad
+      encryption_key: avs15WpCOlvpLbHcY6IUGSb0oT9fC3iP
+      config:
+        scope: "groups openid email"
+        email_domains:
+          - "*"
+        ## do not route health endpoint through the proxy
+        skip_auth_regex:
+          - "/ready"
+        ## auto-register users based on their email address
+        ## Grafana is configured to look for the X-Forwarded-Email header
+        pass_user_headers: true
+      upstream_service: alertmanager-proxy.mla.svc.cluster.local
+      upstream_port: 8080
+      ingress:
+        host: "alertmanager-user.india.seed.argodemo.lab.kubermatic.io"
