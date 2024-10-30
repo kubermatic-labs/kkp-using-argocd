@@ -100,12 +100,12 @@ dex:
     name: Grafana for India seed User clusters
     secret: mZUKpqpmIbBrlzk4dJVfku7s8srKmZBa
     RedirectURIs:
-    - https://grafana-user.self.seed.argodemo.lab.kubermatic.io/oauth/callback
+    - https://grafana-user.india.seed.argodemo.lab.kubermatic.io/oauth/callback
   - id: alertmanager_user_india
     name: AlertManager for India Seed User clusters
     secret: EYWeTkBfL4FdUBkxX2nievTj1JqzW5ad
     RedirectURIs:
-    - https://alertmanager-user.self.seed.argodemo.lab.kubermatic.io/oauth/callback
+    - https://alertmanager-user.india.seed.argodemo.lab.kubermatic.io/oauth/callback
 
   # Depending on your chosen login method, you need to configure either an OAuth provider like
   # Google or GitHub, or configure a set of static passwords. Check the `charts/oauth/values.yaml`
