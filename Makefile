@@ -21,7 +21,7 @@ k1-apply-master:
 	cd kubeone-install/dev-master && terraform init && terraform apply &&../../${KUBEONE_INSTALL_DIR}/kubeone apply -t . -m kubeone.yaml
 
 k1-detroy-master:
-	cd kubeone-install/dev-master && ../../${KUBEONE_INSTALL_DIR}/kubeone 
+	cd kubeone-install/dev-master && ../../${KUBEONE_INSTALL_DIR}/kubeone reset -t . -m kubeone.yaml
 	cd kubeone-install/dev-master && terraform init && terraform destroy
 
 install-kkp-dev:
@@ -34,8 +34,8 @@ install-kkp-dev-user-mla:
 	  --charts-directory ${INSTALL_DIR}/charts --config ./dev/demo-master/k8cConfig.yaml --helm-values ./dev/demo-master/values-usermla.yaml
 
 create-long-lived-master-seed-kubeconfig:
-	${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/dev-master/argodemo-dev-master-kubeconfig | base64 -w0 > ./seed-ready-kube-config
-
+	@kubeconfig=$$(${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/dev-master/argodemo-dev-master-kubeconfig | base64 -w0) && \
+	sed -i "/kubeconfig: /s/: .*/: `echo $$kubeconfig`/" dev/demo-master/seed-kubeconfig-secret-self.yaml
 # DEV Master
 deploy-argo-dev-master:
 	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.argodemo.lab.kubermatic.io' --set 'server.ingress.tls[0].hosts[0]=argocd.argodemo.lab.kubermatic.io'
@@ -43,7 +43,7 @@ deploy-argo-dev-master:
 deploy-argo-apps-dev-master:
 	helm repo add dharapvj https://dharapvj.github.io/helm-charts/
 	helm repo update dharapvj
-	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/demo-master/argoapps-values.yaml dharapvj/argocd-apps | kubectl apply -f -
+	helm upgrade --install kkp-argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/demo-master/argoapps-values.yaml dharapvj/argocd-apps
 
 push-git-tag-dev:
 	git tag -f dev-kkp-${KKP_VERSION}

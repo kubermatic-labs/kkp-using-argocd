@@ -109,7 +109,6 @@ dex:
     # `htpasswd -bnBC 10 "" PASSWORD_HERE | tr -d ':\n' | sed 's/$2y/$2a/'`
     # password: vj
     hash: "$2b$10$bdy3m5CmqsDFy8iBPvJSGe4p5I.L3UuMpmCnEZ3WjhiXRaz8VWNSi"
-
     # these are used within Kubermatic to identify the user
     username: admin
     userID: 08a8684b-db88-4b73-90a9-3cd1661f5466
