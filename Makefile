@@ -40,8 +40,8 @@ k1-detroy-seed:
 	cd kubeone-install/dev-seed && terraform init && terraform destroy
 
 install-kkp-dev:
-	${INSTALL_DIR}/kubermatic-installer deploy \
-	  --charts-directory ${INSTALL_DIR}/charts --config ./dev/demo-master/k8cConfig.yaml --helm-values ./dev/demo-master/values.yaml --storageclass aws \
+	KUBECONFIG=${MASTER_KUBECONFIG} ${INSTALL_DIR}/kubermatic-installer deploy \
+	  --charts-directory ${INSTALL_DIR}/charts --config ./dev/demo-master/k8cConfig.yaml --helm-values ./dev/demo-master/values.yaml \
 	  --skip-charts='cert-manager,nginx-ingress-controller,dex'
 
 # install-kkp-dev-user-mla:
