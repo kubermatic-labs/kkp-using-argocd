@@ -215,23 +215,6 @@ iap:
         host: "prometheus.argodemo.lab.kubermatic.io"
         annotations:
           ingress.kubernetes.io/upstream-hash-by: "ip_hash" ## needed for prometheus federations
-    alertmanager1:
-      name: alertmanager1
-      client_id: alertmanager1
-      client_secret: 31XJHoWbktTYBbCIHchCeAaJtepPPS1W
-      encryption_key: UADeR15wrVNEfqkhT8kIARNOA4Iy10un
-      config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
-        scope: "groups openid email"
-        #allowed_groups: Kubermatic_Managed_Service_Team
-        email_domains:
-          - '*'
-        ## do not route health endpoint through the proxy
-        skip_auth_regex:
-          - '/-/healthy'
-      upstream_service: kube-prometheus-stack-alertmanager.monitoring1.svc.cluster.local
-      upstream_port: 9093
-      ingress:
-        host: "alertmanager1.argodemo.lab.kubermatic.io"
 
 alertmanager:
   storageSize: 4Gi

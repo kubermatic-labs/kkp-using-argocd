@@ -1,0 +1,64 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns
+  namespace: argocd
+spec:
+  destination:
+    namespace: external-dns
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+  - helm:
+      repoURL: https://kubernetes-sigs.github.io/external-dns/
+      chart: external-dns
+      targetRevision: 1.15.0
+      valuesObject:
+        # does not work in latest charts. use extra-args as below
+        #dryRun: true
+        replicas: 1
+        aws:
+          region: "eu-west-3"
+
+        # logLevel: "debug"
+
+        rbac:
+          create: true
+
+        policy: "sync"
+        extraArgs:
+          - "--dry-run"
+          - "--aws-assume-role=arn:aws:iam::091131116505:role/playground-nodes-external-dns-role"
+
+        domainFilters:
+          - lab.kubermatic.io.
+
+        excludeDomains:
+          - qa.lab.kubermatic.io.
+          - kubelb.lab.kubermatic.io.
+          - cs-infra.lab.kubermatic.io.
+
+        #interval: 10s
+        interval: 5m
+
+        # set via helm so that you can refer to role ARN from terraform
+        # FIXME: needs to be set via params.
+        podAnnotations:
+          iam.amazonaws.com/role: "argodemo-dev-master-host"
+
+        resources:
+          limits:
+            cpu: 5m
+            memory: 50Mi
+          requests:
+            cpu: 3m
+            memory: 50Mi
+
+        # metrics:
+        #   enabled: true
+        #   serviceMonitor:
+        #     enabled: true
+        #     selector:
+        #       release: kube-prometheus-stack
+  syncPolicy:
+    automated: {}

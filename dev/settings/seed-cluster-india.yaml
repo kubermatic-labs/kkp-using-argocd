@@ -54,7 +54,8 @@ spec:
   #   # Annotations are used to further tweak the LoadBalancer integration with the
   #   # cloud provider where the seed cluster is running.
     annotations:
-      service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+      # service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+      external-dns.alpha.kubernetes.io/hostname: "*.india.seed.argodemo.lab.kubermatic.io"
   #     metallb.universe.tf/address-pool: kubermatic-nodeport
   kubeconfig:
     apiVersion: v1
