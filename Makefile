@@ -33,9 +33,9 @@ k1-apply-seed:
 	cd kubeone-install/dev-seed && terraform init && terraform apply &&../../${KUBEONE_INSTALL_DIR}/kubeone apply -t . -m kubeone.yaml
 
 k1-detroy-seed:
-	kubectl delete app -n argocd nginx-ingress-controller
-	kubectl delete svc -n nginx-ingress-controller nginx-ingress-controller
-	kubectl delete svc -n kubermatic nodeport-proxy
+	KUBECONFIG=${SEED_KUBECONFIG} kubectl delete app -n argocd nginx-ingress-controller
+	KUBECONFIG=${SEED_KUBECONFIG} kubectl delete svc -n nginx-ingress-controller nginx-ingress-controller
+	KUBECONFIG=${SEED_KUBECONFIG} kubectl delete svc -n kubermatic nodeport-proxy
 	cd kubeone-install/dev-seed && ../../${KUBEONE_INSTALL_DIR}/kubeone reset -t . -m kubeone.yaml
 	cd kubeone-install/dev-seed && terraform init && terraform destroy
 
@@ -89,3 +89,9 @@ create-long-lived-seed-kubeconfig:
 # 	helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.dreamit.local' --set 'server.ingress.tls[0].hosts[0]=argocd.dreamit.local'
 # deploy-argo-apps-kind-cluster:
 # 	helm template argo-apps --set kkpVersion=${KKP_VERSION} -f ./dev/kind/argoapps-values.yaml /opt/kubermatic/community-components/ArgoCD-managed-seed | kubectl apply -f -
+
+# TEMP
+deploy-external-dns:
+	helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/
+	helm repo update external-dns
+	helm upgrade --install external-dns external-dns/external-dns -f ./values-external-dns.yaml

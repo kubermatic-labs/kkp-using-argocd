@@ -280,6 +280,14 @@ resource "aws_iam_role_policy" "policy" {
         Action   = ["elasticloadbalancing:*"],
         Resource = ["*"]
       }
+      # added for external-dns to work
+      {
+          "Effect": "Allow",
+          "Action": "sts:AssumeRole",
+          "Resource": [
+              "arn:aws:iam::091131116505:role/playground-nodes-external-dns-role"
+          ]
+      }
     ]
   })
 }
