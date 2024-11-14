@@ -27,7 +27,7 @@ spec:
 
         policy: "sync"
         extraArgs:
-          - "--dry-run"
+        #  - "--dry-run"
           - "--aws-assume-role=arn:aws:iam::091131116505:role/playground-nodes-external-dns-role"
 
         domainFilters:
