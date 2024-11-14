@@ -71,6 +71,7 @@ alertmanager:
   storageSize: 4Gi
 
 minio:
+  storageClass: kubermatic-fast
   credentials:
     accessKey: 'h4pUEBuR' # 32 byte long
     secretKey: 'l1OThaFWY7cxihhkFzHzPKThJsJPofH5' # 64 byte long
