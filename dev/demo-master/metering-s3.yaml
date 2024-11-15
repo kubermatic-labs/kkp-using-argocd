@@ -1,8 +1,12 @@
 apiVersion: v1
 data:
+# TODO: I think we will need to pre-create the bucket and user in minio for this to work!
+# via minio configuration? below commands do the trick manually for now
+# mc admin user add minio Pbea0rmZF1z5yPRt TTkGamIu9SibifSR
+# mc admin policy attach minio readwrite --user Pbea0rmZF1z5yPRt
   accessKey: UGJlYTBybVpGMXo1eVBSdA==
   bucket: bWV0ZXJpbmctc2VsZi1zZWVk
-  endpoint: aHR0cHM6Ly9taW5pby5taW5pby5zdmMuY2x1c3Rlci5sb2NhbA==
+  endpoint: aHR0cDovL21pbmlvLm1pbmlvLnN2Yy5jbHVzdGVyLmxvY2FsOjkwMDA=
   region: ZXUtY2VudHJhbC0x
   secretKey: VFRrR2FtSXU5U2liaWZTUg==
 kind: Secret

@@ -139,7 +139,7 @@ These names would come handy to understand below references to them and customiz
     make push-git-tag-dev
     ```
 1. ArgoCD syncs nginx ingress and cert-manager automatically
-1. Manually update the DNS records so that ArgoCD is accessible.
+1. Manually update the DNS records so that ArgoCD is accessible. (In the demo, this step is automated via external-dns app)
     ```shell
     # Apply below DNS CNAME record manually in AWS Route53 for below:
     #   argodemo.lab.kubermatic.io
@@ -153,18 +153,14 @@ These names would come handy to understand below references to them and customiz
     ```shell
     make install-kkp-dev
     ```
-1. Apply ClusterIssuer. **Note:** For the demo, staging LetsEncrypt certificate provider is used. In real world production applications, you should use production LetsEncrypt certificate issuer. Just need to change the url in `dev/clusterIssuer.yaml` file.
-    ```shell
-    kubectl apply -f dev/clusterIssuer.yaml
-    ```
 1. Add seed for self (need manual update of kubeconfig in seed.yaml)
     ```shell
     make create-long-lived-master-seed-kubeconfig
     # commit changes to git and push latest changes in
     make push-git-tag-dev
     ```
-1. Sync all apps in ArgoCD by accessing ArgoCD UI and syncing apps manually
-1. Seed DNS record AFTER seed has been added (needed for usercluster creation). Seed is added as part of ArgoCD apps reconciliation above
+1. Wait for all apps to sync in ArgoCD (depending on setup - you can choose to sync all apps manually)
+1. Seed DNS record AFTER seed has been added (needed for usercluster creation). Seed is added as part of ArgoCD apps reconciliation above (In the demo, this step is automated via external-dns app)
     ```shell
     # Apply DNS record manually in AWS Route53
     # *.self.seed.argodemo.lab.kubermatic.io
@@ -216,10 +212,8 @@ We execute most of the below commands, unless noted otherwise, in 2nd shell wher
 1. Now we can create user-clusters on this dedicated seed cluster as well.
 
 FIXME:
-1. metering pod error?
+1. metering pod error? need to create manually 2 buckets in minio. Also user does not exist.
 1. No velero backups?
-1. move ClusterIssuer to common? so that it gets auto installed via seed-extras Apps.
-1. external-dns for dns entries?
 
 > NOTE: Sometimes, we get weird errors about timeouts. We need to restart node-local-dns daemonset and/or coredns / cluster-autoscaler deployment to resolve these errors.
 
@@ -241,5 +235,4 @@ FIXME:
 1. Use Secrets folder (e.g. with git-crypt)
 1. Sync Presets
 1. Thanos Application
-1. Optional External-DNS app so that DNS entries can be done separately
 1. Run targets via Github Actions
