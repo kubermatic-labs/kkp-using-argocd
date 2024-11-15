@@ -1,0 +1,14 @@
+apiVersion: v1
+data:
+# TODO: I think we will need to pre-create the bucket and user in minio for this to work!
+# via minio configuration?
+  accessKey: OUthcGJ6czFOY0hsaHNmMg==
+  bucket: bWV0ZXJpbmctaW5kaWEtc2VlZA==
+  endpoint: aHR0cDovL21pbmlvLm1pbmlvLnN2Yy5jbHVzdGVyLmxvY2FsOjkwMDA=
+  region: ZXUtY2VudHJhbC0x
+  secretKey: OUthcGJ6czFOY0hsaHNmMg==
+kind: Secret
+metadata:
+  name: metering-s3
+  namespace: kubermatic 
+type: Opaque
