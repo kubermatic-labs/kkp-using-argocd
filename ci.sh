@@ -115,11 +115,11 @@ cleanup() {
 
 }
 
-# validatePreReq
-# createSeedClusters
-# validateSeedClusters
-# deployArgoApps
-# installKKP
-# generateNPushSeedKubeConfig
+validatePreReq
+createSeedClusters
+validateSeedClusters
+deployArgoApps
+installKKP
+generateNPushSeedKubeConfig
 validateDemoInstallation
-# cleanup
+cleanup
