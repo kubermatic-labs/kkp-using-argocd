@@ -1,0 +1,105 @@
+# mla
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager-authz-server
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager-proxy
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortex-distributor
+  namespace: mla
+status:
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortex-querier
+  namespace: mla
+status:
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortex-query-frontend
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortex-ruler
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iap-alertmanager
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iap-grafana
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-mla-loki-distributed-distributor
+  namespace: mla
+status:
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-mla-loki-distributed-query-frontend
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-mla-loki-distributed-ruler
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-mla-loki-distributed-table-manager
+  namespace: mla
+status:
+  readyReplicas: 1

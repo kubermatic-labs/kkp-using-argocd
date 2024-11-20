@@ -153,13 +153,13 @@ These names would come handy to understand below references to them and customiz
     ```shell
     make install-kkp-dev
     ```
-1. Add seed for self (need manual update of kubeconfig in seed.yaml)
+1. Add Seed CustomResource for master cluster itself
     ```shell
     make create-long-lived-master-seed-kubeconfig
     # commit changes to git and push latest changes in
     make push-git-tag-dev
     ```
-1. Wait for all apps to sync in ArgoCD (depending on setup - you can choose to sync all apps manually)
+1. Wait for all apps to sync in ArgoCD (depending on setup - you can choose to sync all apps manually. In the demo, all apps are configured to sync automatically.)
 1. Seed DNS record AFTER seed has been added (needed for usercluster creation). Seed is added as part of ArgoCD apps reconciliation above (In the demo, this step is automated via external-dns app)
     ```shell
     # Apply DNS record manually in AWS Route53
@@ -183,11 +183,7 @@ We execute most of the below commands, unless noted otherwise, in 2nd shell wher
     # get argocd admin password via below command
     kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
     ```
-1. Apply ClusterIssuer. **Note:** For the demo, staging LetsEncrypt certificate provider is used. In real world production applications, you should use production LetsEncrypt certificate issuer. Just need to change the url in `dev/clusterIssuer.yaml` file.
-    ```shell
-    kubectl apply -f dev/clusterIssuer.yaml
-    ```
-1. Add Seed nginx-ingress DNS record
+1. Add Seed nginx-ingress DNS record (In the demo, this step is automated via external-dns app)
     ```shell
     # Apply below DNS CNAME record manually in AWS Route53
     #   *.india.argodemo.lab.kubermatic.io

@@ -1,0 +1,81 @@
+# kubermatic
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubermatic-api
+  namespace: kubermatic
+status:
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubermatic-dashboard
+  namespace: kubermatic
+status:
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubermatic-master-controller-manager
+  namespace: kubermatic
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubermatic-operator
+  namespace: kubermatic
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubermatic-seed-controller-manager
+  namespace: kubermatic
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubermatic-webhook
+  namespace: kubermatic
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodeport-proxy-envoy
+  namespace: kubermatic
+status:
+  readyReplicas: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodeport-proxy-updater
+  namespace: kubermatic
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seed-proxy-india   # TODO: ENV SPECIFIC name. Can we templatize it?
+  namespace: kubermatic
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seed-proxy-kubermatic # TODO: ENV SPECIFIC name. Can we templatize it?
+  namespace: kubermatic
+status:
+  readyReplicas: 1

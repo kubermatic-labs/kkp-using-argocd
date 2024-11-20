@@ -1,0 +1,25 @@
+# iap
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iap-alertmanager
+  namespace: iap
+status:
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iap-grafana
+  namespace: iap
+status:
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iap-prometheus
+  namespace: iap
+status:
+  readyReplicas: 2

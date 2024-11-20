@@ -279,7 +279,7 @@ resource "aws_iam_role_policy" "policy" {
         Effect   = "Allow",
         Action   = ["elasticloadbalancing:*"],
         Resource = ["*"]
-      }
+      },
       # added for external-dns to work
       {
           "Effect": "Allow",

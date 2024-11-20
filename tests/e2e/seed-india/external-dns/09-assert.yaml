@@ -1,0 +1,9 @@
+# external-dns
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns
+  namespace: external-dns
+status:
+  readyReplicas: 1
+---

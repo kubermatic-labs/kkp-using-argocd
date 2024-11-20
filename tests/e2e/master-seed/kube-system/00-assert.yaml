@@ -1,0 +1,33 @@
+# kube-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: machine-controller
+  namespace: kube-system
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: machine-controller-webhook
+  namespace: kube-system
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operating-system-manager
+  namespace: kube-system
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operating-system-manager-webhook
+  namespace: kube-system
+status:
+  readyReplicas: 1

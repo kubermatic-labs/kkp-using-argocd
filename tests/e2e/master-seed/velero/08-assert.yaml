@@ -1,0 +1,9 @@
+# velero
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: velero
+  namespace: velero
+status:
+  readyReplicas: 1
