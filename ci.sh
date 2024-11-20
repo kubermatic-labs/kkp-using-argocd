@@ -34,6 +34,7 @@ createSeedClusters(){
   cd ../..
   # TODO: preferablly, in another shell - create seed cluster
   cd kubeone-install/dev-seed && terraform init && terraform apply -auto-approve &&../../${KUBEONE_INSTALL_DIR}/kubeone apply -t . -m kubeone.yaml --auto-approve
+  cd ../..
 }
 # Validate kubeone clusters - apiserver availability, smoke test
 validateSeedClusters(){
@@ -41,12 +42,10 @@ validateSeedClusters(){
 }
 # deploy argo and kkp argo apps
 deployArgoApps() {
-  # FIXME: add sleep of 1 minutes here?
   echo Deploying ArgoCD and KKP ArgoCD Apps.
   # master seed
   # TODO: variable for the ingress hostname
   # variable for argocd chart version
-  
 	helm repo add dharapvj https://dharapvj.github.io/helm-charts/
 	helm repo update dharapvj
 	KUBECONFIG=${MASTER_KUBECONFIG} helm upgrade --install argocd --version 5.36.10 --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set 'server.ingress.hosts[0]=argocd.argodemo.lab.kubermatic.io' --set 'server.ingress.tls[0].hosts[0]=argocd.argodemo.lab.kubermatic.io'
@@ -89,19 +88,38 @@ generateNPushSeedKubeConfig() {
 # validate installation? Create user clusters, access MLA links etc.
 # more the merrier
 validateDemoInstallation() {
-  echo validateDemoInstallation: Not implemented.
+  echo validate the Demo Installation - master seed as well as india seed.
+  # sleep for completion of installation of all services!
+  sleep 10m
+  KUBECONFIG=$PWD/kubeone-install/dev-master/argodemo-dev-master-kubeconfig kubectl kuttl test --config ./tests/e2e/kuttl-test-master-seed.yaml
+  KUBECONFIG=$PWD/kubeone-install/dev-seed/argodemo-dev-seed-kubeconfig kubectl kuttl test --config ./tests/e2e/kuttl-test-seed-india.yaml 
 }
 
-# post validation, cleanup?
+# post validation, cleanup
 cleanup() {
-  echo cleanup: Not implemented.
+  echo cleanup all the cluster resources.
+  # first destroy master so that kubermatic-operator is gone otherwise it tries to recreate seed node-port-proxy LB
+	KUBECONFIG=${MASTER_KUBECONFIG} kubectl delete app -n argocd nginx-ingress-controller
+	KUBECONFIG=${MASTER_KUBECONFIG} kubectl delete svc -n nginx-ingress-controller nginx-ingress-controller
+	KUBECONFIG=${MASTER_KUBECONFIG} kubectl delete svc -n kubermatic nodeport-proxy
+	cd kubeone-install/dev-master && ../../${KUBEONE_INSTALL_DIR}/kubeone reset -t . -m kubeone.yaml --auto-approve
+	terraform init && terraform destroy -auto-approve
+  cd ../..
+
+  # now destroy seed
+	KUBECONFIG=${SEED_KUBECONFIG} kubectl delete app -n argocd nginx-ingress-controller
+	KUBECONFIG=${SEED_KUBECONFIG} kubectl delete svc -n nginx-ingress-controller nginx-ingress-controller
+	KUBECONFIG=${SEED_KUBECONFIG} kubectl delete svc -n kubermatic nodeport-proxy
+	cd kubeone-install/dev-seed && ../../${KUBEONE_INSTALL_DIR}/kubeone reset -t . -m kubeone.yaml --auto-approve
+	terraform init && terraform destroy -auto-approve
+
 }
 
 # validatePreReq
 # createSeedClusters
 # validateSeedClusters
-deployArgoApps
-installKKP
-generateNPushSeedKubeConfig
+# deployArgoApps
+# installKKP
+# generateNPushSeedKubeConfig
 validateDemoInstallation
-cleanup
+# cleanup
