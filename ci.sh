@@ -2,27 +2,34 @@
 
 set -euo pipefail
 
-# TODO: Accept the versions as Args or via a config file
-KKP_VERSION=v2.25.11
-K1_VERSION=1.8.3
-# To upgrade KKP, update the version of kkp here.
-#KKP_VERSION=v2.25.6
-INSTALL_DIR=./binaries/kubermatic/releases/${KKP_VERSION}
-KUBEONE_INSTALL_DIR=./binaries/kubeone/releases/${K1_VERSION}
-# TODO = variablize env value `dev` as well as other values like argodemo, master and seed
-MASTER_KUBECONFIG=./kubeone-install/dev-master/argodemo-dev-master-kubeconfig
-SEED_KUBECONFIG=./kubeone-install/dev-seed/argodemo-dev-seed-kubeconfig
-
 # INPUTS:
 # 1. git repository where customization are present
 # 2. git tag name which we want to apply (or may be just release name and we build the tag name)
 # 3. seed clusters should be created or not
 
+# TODO: Accept the versions as Args or via a config file
+KKP_VERSION=v2.25.11
+K1_VERSION=1.8.3
+ENV=dev
+MASTER=dev-master
+SEED=dev-seed
+CLUSTER_PREFIX=argodemo
+
+# To upgrade KKP, update the version of kkp here.
+#KKP_VERSION=v2.25.6
+INSTALL_DIR=./binaries/kubermatic/releases/${KKP_VERSION}
+KUBEONE_INSTALL_DIR=./binaries/kubeone/releases/${K1_VERSION}
+# TODO = variablize env value `dev` as well as other values like argodemo, master and seed
+# FIXME: replace dev-master and dev-seed
+MASTER_KUBECONFIG=./kubeone-install/dev-master/${CLUSTER_PREFIX}-${MASTER}-kubeconfig
+SEED_KUBECONFIG=./kubeone-install/dev-seed/${CLUSTER_PREFIX}-${SEED}-kubeconfig
+
 # LOGIC
-# validate that we have make, kubeone, kubectl, helm, git, sed binaries available
+# validate that we have kubeone, kubectl, helm, git, sed, kuttl binaries available
 validatePreReq() {
   echo validatePreReq: Not implemented.
   # validate that either AWS_PROFILE or AWS_ACCESS_KEY and AWS_SECRET_KEY env variables are available
+
 }
 
 # Based on flag - create kubeone clusters (you should be able to skip it otherwise)
@@ -31,9 +38,17 @@ createSeedClusters(){
   # TODO: Check flag about whether to create or not. Also flag should dictate whether extra seed is needed or not.
   # `dev` should be from ENV var
   cd kubeone-install/dev-master && terraform init && terraform apply -auto-approve &&../../${KUBEONE_INSTALL_DIR}/kubeone apply -t . -m kubeone.yaml --auto-approve
+  if [ $? -ne 0 ]; then
+    echo terraform install failed.
+    exit 2
+  fi
   cd ../..
   # TODO: preferablly, in another shell - create seed cluster
   cd kubeone-install/dev-seed && terraform init && terraform apply -auto-approve &&../../${KUBEONE_INSTALL_DIR}/kubeone apply -t . -m kubeone.yaml --auto-approve
+  if [ $? -ne 0 ]; then
+    echo terraform install failed.
+    exit 3
+  fi
   cd ../..
 }
 # Validate kubeone clusters - apiserver availability, smoke test
