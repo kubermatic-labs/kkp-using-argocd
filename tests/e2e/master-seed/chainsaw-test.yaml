@@ -1,0 +1,8 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: master-seed
+spec:
+  steps: []
+
+# TODO: Still to validate ConfigMap, Secrets, RBAC?, CRs like Certificate?

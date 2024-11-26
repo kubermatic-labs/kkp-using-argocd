@@ -64,13 +64,14 @@ metadata:
 status:
   readyReplicas: 1
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: seed-proxy-india   # TODO: ENV SPECIFIC name. Can we templatize it?
-  namespace: kubermatic
-status:
-  readyReplicas: 1
+# FIXME: This needs to be templated since we might skip the seed!
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: seed-proxy-india   # TODO: ENV SPECIFIC name. Can we templatize it?
+#   namespace: kubermatic
+# status:
+#   readyReplicas: 1
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -79,3 +80,20 @@ metadata:
   namespace: kubermatic
 status:
   readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: metering-prometheus
+  namespace: kubermatic
+status:
+  readyReplicas: 1
+---
+apiVersion:  networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kubermatic
+  namespace: kubermatic
+status:
+  loadBalancer:
+    (length(ingress) > `0`): true
