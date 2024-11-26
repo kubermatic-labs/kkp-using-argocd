@@ -13,13 +13,12 @@ K1_VERSION=1.8.3
 ARGO_VERSION=5.36.10
 ENV=dev
 MASTER=dev-master
-# SEED=false - don't create extra seed. Any other value - name of the seed
-# SEED=false
+# SEED=false # - don't create extra seed. Any other value - name of the seed
 SEED=dev-seed
 CLUSTER_PREFIX=argodemo
 
 # To upgrade KKP, update the version of kkp here.
-#KKP_VERSION=v2.25.6
+#KKP_VERSION=v2.26.1
 INSTALL_DIR=./binaries/kubermatic/releases/${KKP_VERSION}
 KUBEONE_INSTALL_DIR=./binaries/kubeone/releases/${K1_VERSION}
 MASTER_KUBECONFIG=./kubeone-install/${MASTER}/${CLUSTER_PREFIX}-${MASTER}-kubeconfig
@@ -30,9 +29,9 @@ SEED_KUBECONFIG=./kubeone-install/${SEED}/${CLUSTER_PREFIX}-${SEED}-kubeconfig
 # TODO: validate availability of ssh-agent?
 validatePreReq() {
   echo validate Prerequisites.
-  if [[ -n "${AWS_ACCESS_KEY_ID}" && -n "${AWS_SECRET_ACCESS_KEY}" ]]; then
+  if [[ -n "${AWS_ACCESS_KEY_ID-}" && -n "${AWS_SECRET_ACCESS_KEY-}" ]]; then
     echo AWS credentials found! Proceeding.
-  elif [[ -n "${AWS_PROFILE}" ]]; then
+  elif [[ -n "${AWS_PROFILE-}" ]]; then
     echo AWS profile variable found! Proceeding.
   else
     echo No AWS credentials configured. You must export either combination of AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY OR AWS_PROFILE env variable. Exiting the script.
@@ -148,13 +147,13 @@ generateNPushSeedKubeConfig() {
 validateDemoInstallation() {
   echo validate the Demo Installation - master seed as well as india seed.
   # sleep for completion of installation of all services!
-  sleep 6m
+  sleep 10m
 
   # hack: need to work the DNS issues so that certs get created properly
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
   sleep 1m
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
-  sleep 2m
+  sleep 4m
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig chainsaw test tests/e2e/master-seed
 
   if [[ ${SEED} != false ]]; then
@@ -162,7 +161,7 @@ validateDemoInstallation() {
     KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${SEED}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
     sleep 1m
     KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
-    sleep 2m
+    sleep 4m
     KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig chainsaw test tests/e2e/seed-india
   fi
 }
@@ -188,11 +187,11 @@ cleanup() {
   fi
 }
 
-# validatePreReq
-# createSeedClusters
-# validateSeedClusters
-# deployArgoApps
-# installKKP
-# generateNPushSeedKubeConfig
-# validateDemoInstallation
-cleanup
+validatePreReq
+createSeedClusters
+validateSeedClusters
+deployArgoApps
+installKKP
+generateNPushSeedKubeConfig
+validateDemoInstallation
+# cleanup

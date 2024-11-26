@@ -43,6 +43,7 @@ spec:
 
         # set via helm so that you can refer to role ARN from terraform
         # FIXME: needs to be set via params.
+        txtOwnerId: argodemo-dev-master
         podAnnotations:
           iam.amazonaws.com/role: "argodemo-dev-master-host"
 
