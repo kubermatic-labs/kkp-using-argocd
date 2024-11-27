@@ -38,3 +38,20 @@ metadata:
   namespace: argocd
 status:
   readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: argocd-application-controller
+  namespace: argocd
+status:
+  readyReplicas: 1
+---
+apiVersion:  networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server
+  namespace: argocd
+status:
+  loadBalancer:
+    (length(ingress) > `0`): true

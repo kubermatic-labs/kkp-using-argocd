@@ -33,3 +33,6 @@ velero:
         region: minio
         s3ForcePathStyle: 'true'
         s3Url: http://minio.minio.svc.cluster.local:9000
+
+promtail:
+  priorityClassName: system-node-critical  # This will ensure that promtail pods always get rolled out!

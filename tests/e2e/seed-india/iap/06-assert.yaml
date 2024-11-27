@@ -1,3 +1,5 @@
+# FIXME: Currently, the certificate requests are bit flacky. So IAP deployment do not become ready until we fix the cert-manager orders.
+# So commenting out automated tests here.
 # iap
 ---
 apiVersion: apps/v1
@@ -23,3 +25,30 @@ metadata:
   namespace: iap
 status:
   readyReplicas: 2
+---
+apiVersion:  networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: alertmanager-iap
+  namespace: iap
+status:
+  loadBalancer:
+    (length(ingress) > `0`): true
+---
+apiVersion:  networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-iap
+  namespace: iap
+status:
+  loadBalancer:
+    (length(ingress) > `0`): true
+---
+apiVersion:  networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-iap
+  namespace: iap
+status:
+  loadBalancer:
+    (length(ingress) > `0`): true

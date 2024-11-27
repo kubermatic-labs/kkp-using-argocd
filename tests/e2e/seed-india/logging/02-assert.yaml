@@ -1,0 +1,17 @@
+# logging
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: loki
+  namespace: logging
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: promtail
+  namespace: logging
+status:
+  (numberUnavailable == null): true

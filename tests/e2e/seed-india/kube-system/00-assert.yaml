@@ -31,3 +31,43 @@ metadata:
   namespace: kube-system
 status:
   readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: aws-cloud-controller-manager
+  namespace: kube-system
+status:
+  (numberUnavailable == null): true
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: canal
+  namespace: kube-system
+status:
+  (numberUnavailable == null): true
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ebs-csi-node
+  namespace: kube-system
+status:
+  (numberUnavailable == null): true
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+status:
+  (numberUnavailable == null): true
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-local-dns
+  namespace: kube-system
+status:
+  (numberUnavailable == null): true

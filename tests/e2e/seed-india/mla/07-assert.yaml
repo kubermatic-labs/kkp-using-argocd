@@ -103,3 +103,150 @@ metadata:
   namespace: mla
 status:
   readyReplicas: 1
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: consul-consul-server
+  namespace: mla
+status:
+  readyReplicas: 3
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cortex-alertmanager
+  namespace: mla
+status:
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cortex-compactor
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cortex-ingester
+  namespace: mla
+status:
+  readyReplicas: 3
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cortex-memcached-blocks
+  namespace: mla
+status:
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cortex-memcached-blocks-index
+  namespace: mla
+status:
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cortex-memcached-blocks-metadata
+  namespace: mla
+status:
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cortex-store-gateway
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: grafana
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: user-mla-loki-distributed-compactor
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: user-mla-loki-distributed-ingester
+  namespace: mla
+status:
+  readyReplicas: 3
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: user-mla-loki-distributed-memcached-chunks
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: user-mla-loki-distributed-memcached-frontend
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: user-mla-loki-distributed-memcached-index-queries
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: user-mla-loki-distributed-memcached-index-writes
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: user-mla-loki-distributed-querier
+  namespace: mla
+status:
+  readyReplicas: 1
+---
+apiVersion:  networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: alertmanager-iap
+  namespace: iap
+status:
+  loadBalancer:
+    (length(ingress) > `0`): true
+---
+apiVersion:  networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-iap
+  namespace: iap
+status:
+  loadBalancer:
+    (length(ingress) > `0`): true
