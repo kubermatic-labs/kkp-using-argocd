@@ -15,4 +15,7 @@ addons:
   enable: true
   addons:
     - name: cluster-autoscaler
-#    - name: nodelocaldns # while nodelocaldns is highl useful, it is not great for demo since it delays external-dns created dns name resolution due to caching. So commented it out
+    # DEMO ONLY resource allocation. Not PROD GRADE!
+    - name: cni-canal
+      params:
+        RequestsCPU: "60m"

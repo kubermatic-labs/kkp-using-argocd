@@ -33,6 +33,52 @@ velero:
         region: minio
         s3ForcePathStyle: 'true'
         s3Url: http://minio.minio.svc.cluster.local:9000
+# DEMO ONLY resource allocation. Not PROD GRADE!
+  resources:
+    requests:
+      cpu: 10m
+
 
 promtail:
   priorityClassName: system-node-critical  # This will ensure that promtail pods always get rolled out!
+
+# DEMO ONLY resource allocation. Not PROD GRADE!
+minio:
+  resources:
+    minio:
+      requests:
+        cpu: 10m
+alertmanager:
+  resources:
+    alertmanager:
+      requests:
+        cpu: 10m
+nodeExporter:
+  resources:
+    requests:
+      cpu: 10m
+cert-manager:
+  webhook:
+    resources:
+      requests:
+        cpu: 10m
+dex:
+  resources:
+    requests:
+      cpu: 10m
+loki:
+  resources:
+    requests:
+      cpu: 50m
+prometheus:
+  containers:
+    prometheus:
+      resources:
+        requests:
+          cpu: 200m
+blackboxExporter:
+  containers:
+    blackboxExporter:
+      resources:
+        requests:
+          cpu: 10m

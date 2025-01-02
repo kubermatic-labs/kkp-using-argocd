@@ -59,3 +59,10 @@ iap:
       upstream_port: 8080
       ingress:
         host: "alertmanager-user.self.seed.argodemo.lab.kubermatic.io"
+
+# DEMO ONLY resource allocation. Not PROD GRADE!
+consul:
+  server:
+    resource:
+      requests:
+        cpu: 40m

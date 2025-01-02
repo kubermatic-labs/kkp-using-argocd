@@ -56,7 +56,17 @@ spec:
     annotations:
       # service.beta.kubernetes.io/azure-load-balancer-internal: "true"
       external-dns.alpha.kubernetes.io/hostname: "*.self.seed.argodemo.lab.kubermatic.io"
-  #     metallb.universe.tf/address-pool: kubermatic-nodeport
+      # metallb.universe.tf/address-pool: kubermatic-nodeport
+    # DEMO ONLY resource allocation. Not PROD GRADE!
+    envoy:
+      resources:
+        requests:
+          cpu: 10m
+    envoyManager:
+      resources:
+        requests:
+          cpu: 2m
+
   kubeconfig:
     apiVersion: v1
     kind: "Secret"

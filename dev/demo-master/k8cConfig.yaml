@@ -64,3 +64,17 @@ spec:
     # cat /dev/urandom | tr -dc A-Za-z0-9 | head -c32
     issuerCookieKey: eL3DduBf10VeBM3bAwmfA6qIGvmTWXz4
     serviceAccountKey: lvURnM9KNg2ylBI7tA2SiKNhLcbuuzvg
+
+# DEMO ONLY resource allocation. Not PROD GRADE!
+  api:
+    resources:
+      requests:
+        cpu: 100m
+  masterController:
+    resources:
+      requests:
+        cpu: 20m
+  ui:
+    resources:
+      requests:
+        cpu: 100m
