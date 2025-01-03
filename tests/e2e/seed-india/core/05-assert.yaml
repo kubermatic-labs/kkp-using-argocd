@@ -17,6 +17,15 @@ status:
 #   namespace: oauth
 # status:
 #   readyReplicas: 2
+# ---
+# apiVersion:  networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: dex
+#   namespace: oauth
+# status:
+#   loadBalancer:
+#     (length(ingress) > `0`): true
 
 # cert-manager
 ---
@@ -44,12 +53,3 @@ metadata:
 status:
   readyReplicas: 1
 
----
-apiVersion:  networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: dex
-  namespace: oauth
-status:
-  loadBalancer:
-    (length(ingress) > `0`): true

@@ -1,7 +1,7 @@
-KKP_VERSION=v2.25.11
 K1_VERSION=1.8.3
 # To upgrade KKP, update the version of kkp here.
-#KKP_VERSION=v2.25.6
+#KKP_VERSION=v2.25.11
+KKP_VERSION=v2.26.2
 INSTALL_DIR=./binaries/kubermatic/releases/${KKP_VERSION}
 KUBEONE_INSTALL_DIR=./binaries/kubeone/releases/${K1_VERSION}
 MASTER_KUBECONFIG=./kubeone-install/dev-master/argodemo-dev-master-kubeconfig

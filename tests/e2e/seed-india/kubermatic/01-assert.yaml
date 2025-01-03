@@ -39,12 +39,3 @@ metadata:
   namespace: kubermatic
 status:
   readyReplicas: 1
----
-apiVersion:  networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: kubermatic
-  namespace: kubermatic
-status:
-  loadBalancer:
-    (length(ingress) > `0`): true
