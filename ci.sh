@@ -8,7 +8,9 @@ set -euo pipefail
 # 3. additional seed clusters should be created or not
 
 # TODO: Accept the versions as Args or via a config file
-KKP_VERSION=v2.25.11
+# To upgrade KKP, update the version of kkp here.
+#KKP_VERSION=v2.25.11
+KKP_VERSION=v2.26.2
 K1_VERSION=1.8.3
 ARGO_VERSION=5.36.10
 ENV=dev
@@ -17,8 +19,6 @@ MASTER=dev-master
 SEED=dev-seed
 CLUSTER_PREFIX=argodemo
 
-# To upgrade KKP, update the version of kkp here.
-#KKP_VERSION=v2.26.1
 INSTALL_DIR=./binaries/kubermatic/releases/${KKP_VERSION}
 KUBEONE_INSTALL_DIR=./binaries/kubeone/releases/${K1_VERSION}
 MASTER_KUBECONFIG=./kubeone-install/${MASTER}/${CLUSTER_PREFIX}-${MASTER}-kubeconfig
@@ -134,10 +134,9 @@ generateNPushSeedKubeConfig() {
     kubeconfig_b64=$(${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/${SEED}/${CLUSTER_PREFIX}-${SEED}-kubeconfig | base64 -w0)
     sed -i "/kubeconfig: /s/: .*/: `echo $kubeconfig_b64`/" ${ENV}/demo-master/seed-kubeconfig-secret-india.yaml
   fi
-
   # automated git commit and push tag
   git add ${ENV}/demo-master/seed-kubeconfig-secret-india.yaml ${ENV}/demo-master/seed-kubeconfig-secret-self.yaml
-  git commit -m "Adding latest seed kubeconfigs so that Seed resources will reconcile correctly"
+  git commit -m "Adding latest seed kubeconfigs so that Seed resources will reconcile correctly" || echo "ignore commit failure, proceed"
   git push origin main
   git tag -f ${ENV}-kkp-${KKP_VERSION}
 	git push origin -f ${ENV}-kkp-${KKP_VERSION}
@@ -145,22 +144,29 @@ generateNPushSeedKubeConfig() {
 # TODO: validate installation? Create user clusters, access MLA links etc.
 # more the merrier
 validateDemoInstallation() {
-  echo validate the Demo Installation - master seed as well as india seed.
+  echo Validating the Demo Installation.
+  echo sleeping for many minutes while restarting some services to get cert-manager based certs clearly created.
   # sleep for completion of installation of all services!
-  sleep 10m
+  sleep 4m
 
   # hack: need to work the DNS issues so that certs get created properly
-  KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
+  KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart deploy -n kube-system coredns
   sleep 1m
+  KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
+  sleep 8m
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
   sleep 4m
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig chainsaw test tests/e2e/master-seed
 
   if [[ ${SEED} != false ]]; then
+    echo now running e2e tests for seed
+    echo sleeping for many minutes while restarting some services to get cert-manager based certs clearly created.
     # hack: need to work the DNS issues so that certs get created properly
-    KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${SEED}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
+    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n kube-system coredns
     sleep 1m
-    KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
+    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
+    sleep 8m
+    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
     sleep 4m
     KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig chainsaw test tests/e2e/seed-india
   fi
