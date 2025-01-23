@@ -101,7 +101,7 @@ resource "aws_subnet" "public" {
   cidr_block = cidrsubnet(
     data.aws_vpc.selected.cidr_block,
     local.subnet_newbits,
-    (random_integer.cidr_block.result + count.index) % local.subnet_total + 25,
+    (random_integer.cidr_block.result + count.index) % local.subnet_total + 12,
   )
 
   tags = tomap({

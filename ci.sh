@@ -155,7 +155,7 @@ validateDemoInstallation() {
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
   sleep 8m
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
-  sleep 4m
+  sleep 6m
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig chainsaw test tests/e2e/master-seed
 
   if [[ ${SEED} != false ]]; then
@@ -167,7 +167,7 @@ validateDemoInstallation() {
     KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
     sleep 8m
     KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
-    sleep 4m
+    sleep 6m
     KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig chainsaw test tests/e2e/seed-india
   fi
 }
@@ -176,23 +176,24 @@ validateDemoInstallation() {
 cleanup() {
   echo cleanup all the cluster resources.
   # first destroy master so that kubermatic-operator is gone otherwise it tries to recreate seed node-port-proxy LB
-	KUBECONFIG=${MASTER_KUBECONFIG} kubectl delete app -n argocd nginx-ingress-controller
-	KUBECONFIG=${MASTER_KUBECONFIG} kubectl delete svc -n nginx-ingress-controller nginx-ingress-controller
-	KUBECONFIG=${MASTER_KUBECONFIG} kubectl delete svc -n kubermatic nodeport-proxy
+	KUBECONFIG=${MASTER_KUBECONFIG} kubectl delete app -n argocd nginx-ingress-controller || true
+	KUBECONFIG=${MASTER_KUBECONFIG} kubectl delete svc -n nginx-ingress-controller nginx-ingress-controller || true
+	KUBECONFIG=${MASTER_KUBECONFIG} kubectl delete svc -n kubermatic nodeport-proxy || true
 	cd kubeone-install/${MASTER} && ../../${KUBEONE_INSTALL_DIR}/kubeone reset -t . -m kubeone.yaml --auto-approve
 	terraform init && terraform destroy -auto-approve
   cd ../..
 
   if [[ ${SEED} != false ]]; then
     # now destroy seed
-    KUBECONFIG=${SEED_KUBECONFIG} kubectl delete app -n argocd nginx-ingress-controller
-    KUBECONFIG=${SEED_KUBECONFIG} kubectl delete svc -n nginx-ingress-controller nginx-ingress-controller
-    KUBECONFIG=${SEED_KUBECONFIG} kubectl delete svc -n kubermatic nodeport-proxy
+    KUBECONFIG=${SEED_KUBECONFIG} kubectl delete app -n argocd nginx-ingress-controller || true
+    KUBECONFIG=${SEED_KUBECONFIG} kubectl delete svc -n nginx-ingress-controller nginx-ingress-controller || true
+    KUBECONFIG=${SEED_KUBECONFIG} kubectl delete svc -n kubermatic nodeport-proxy || true
     cd kubeone-install/${SEED} && ../../${KUBEONE_INSTALL_DIR}/kubeone reset -t . -m kubeone.yaml --auto-approve
     terraform init && terraform destroy -auto-approve
   fi
 }
 
+date
 validatePreReq
 createSeedClusters
 validateSeedClusters
@@ -201,3 +202,4 @@ installKKP
 generateNPushSeedKubeConfig
 validateDemoInstallation
 # cleanup
+date
