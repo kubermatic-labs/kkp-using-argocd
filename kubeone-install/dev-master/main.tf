@@ -24,9 +24,9 @@ locals {
   zoneA                 = data.aws_availability_zones.available.names[0]
   zoneB                 = data.aws_availability_zones.available.names[1]
   zoneC                 = data.aws_availability_zones.available.names[2]
-  vpc_mask              = parseint(split("/", data.aws_vpc.selected.cidr_block)[1], 10)
+  vpc_mask              = parseint(split("/", data.aws_vpc.selected.cidr_block)[1], 10)+2
   subnet_total          = pow(2, var.subnets_cidr - local.vpc_mask)
-  subnet_newbits        = var.subnets_cidr - (32 - local.vpc_mask)
+  subnet_newbits        = var.subnets_cidr - (48 - local.vpc_mask)
   worker_os             = var.worker_os == "" ? var.ami_filters[var.os].worker_os : var.worker_os
   worker_deploy_ssh_key = var.worker_deploy_ssh_key ? [aws_key_pair.deployer.public_key] : []
   ssh_username          = var.ssh_username == "" ? var.ami_filters[var.os].ssh_username : var.ssh_username

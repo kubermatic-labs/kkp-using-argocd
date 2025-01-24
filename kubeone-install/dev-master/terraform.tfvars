@@ -1,5 +1,7 @@
 cluster_name = "argodemo-dev-master"
 
+vpc_id = "vpc-0f923a77c89ca2d15" # vpc - kkp-argocd-e2e-test-vpc
+subnets_cidr = 27
 cluster_autoscaler_max_replicas    = "10"
 cluster_autoscaler_min_replicas    = "1"
 control_plane_vm_count             = "1"
