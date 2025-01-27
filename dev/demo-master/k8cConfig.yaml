@@ -19,7 +19,7 @@ metadata:
   namespace: kubermatic
 spec:
   # insert the Docker authentication JSON provided by Kubermatic here
-  imagePullSecret:
+  #imagePullSecret:
 
   ingress:
     # Domain is the base domain where the dashboard shall be available. Even with
