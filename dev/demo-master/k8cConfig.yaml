@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+### NOTE ### - This file is not synced by ArgoCD because we don't want to store imagePullSecret information in public git
+### This file is used by kubermatic installer to dynamically get applied at run time
 apiVersion: kubermatic.k8c.io/v1
 kind: KubermaticConfiguration
 metadata:

@@ -9,8 +9,8 @@ set -euo pipefail
 
 # TODO: Accept the versions as Args or via a config file
 # To upgrade KKP, update the version of kkp here.
-#KKP_VERSION=v2.25.11
-KKP_VERSION=v2.26.2
+KKP_VERSION=v2.27.0-alpha.1
+#KKP_VERSION=v2.26.2
 K1_VERSION=1.8.3
 ARGO_VERSION=5.36.10
 ENV=dev
@@ -24,42 +24,47 @@ KUBEONE_INSTALL_DIR=./binaries/kubeone/releases/${K1_VERSION}
 MASTER_KUBECONFIG=./kubeone-install/${MASTER}/${CLUSTER_PREFIX}-${MASTER}-kubeconfig
 SEED_KUBECONFIG=./kubeone-install/${SEED}/${CLUSTER_PREFIX}-${SEED}-kubeconfig
 
+echodate() {
+    local timestamp=$(date +"%m-%d %T")
+    echo "[$timestamp] $*"
+}
+
 # LOGIC
 # validate that we have kubeone, kubectl, helm, git, sed, chainsaw binaries available
 # TODO: validate availability of ssh-agent?
 validatePreReq() {
-  echo validate Prerequisites.
+  echodate validate Prerequisites.
   if [[ -n "${AWS_ACCESS_KEY_ID-}" && -n "${AWS_SECRET_ACCESS_KEY-}" ]]; then
-    echo AWS credentials found! Proceeding.
+    echodate AWS credentials found! Proceeding.
   elif [[ -n "${AWS_PROFILE-}" ]]; then
-    echo AWS profile variable found! Proceeding.
+    echodate AWS profile variable found! Proceeding.
   else
-    echo No AWS credentials configured. You must export either combination of AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY OR AWS_PROFILE env variable. Exiting the script.
+    echodate No AWS credentials configured. You must export either combination of AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY OR AWS_PROFILE env variable. Exiting the script.
     exit 1
   fi
 
   if ! [ -x "$(command -v git)" ]; then
-    echo 'Error: git is not installed.' >&2
+    echodate 'Error: git is not installed.' >&2
     exit 1
   fi
 
   if ! [ -x ${KUBEONE_INSTALL_DIR}/kubeone ]; then
-    echo 'Error: kubeone is not installed.' >&2
+    echodate 'Error: kubeone is not installed.' >&2
     exit 1
   fi
 
   if ! [ -x "$(command -v helm)" ]; then
-    echo 'Error: helm is not installed.' >&2
+    echodate 'Error: helm is not installed.' >&2
     exit 1
   fi
 
   if ! [ -x "$(command -v sed)" ]; then
-    echo 'Error: sed is not installed.' >&2
+    echodate 'Error: sed is not installed.' >&2
     exit 1
   fi
 
   if ! [ -x "$(command -v chainsaw)" ]; then
-    echo 'Error: chainsaw testing tool is not installed.' >&2
+    echodate 'Error: chainsaw testing tool is not installed.' >&2
     exit 1
   fi
 }
@@ -68,18 +73,20 @@ validatePreReq() {
 # TODO: Check flag about whether to create seed clusters or not
 # fix directory naming?
 createSeedClusters(){ 
-  echo creating Seed Clusters
+  echodate creating Seed Clusters
+  # cd kubeone-install/${MASTER} && terraform init && terraform apply -auto-approve
   cd kubeone-install/${MASTER} && terraform init && terraform apply -auto-approve &&../../${KUBEONE_INSTALL_DIR}/kubeone apply -t . -m kubeone.yaml --auto-approve
   if [ $? -ne 0 ]; then
-    echo terraform install failed.
+    echodate terraform install failed.
     exit 2
   fi
   cd ../..
 
   if [[ ${SEED} != false ]]; then
     cd kubeone-install/${SEED} && terraform init && terraform apply -auto-approve &&../../${KUBEONE_INSTALL_DIR}/kubeone apply -t . -m kubeone.yaml --auto-approve
+    # cd kubeone-install/${SEED} && terraform init && terraform apply -auto-approve
     if [ $? -ne 0 ]; then
-      echo terraform install failed.
+      echodate terraform install failed.
       exit 3
     fi
     cd ../..
@@ -89,11 +96,11 @@ createSeedClusters(){
 # Validate kubeone clusters - apiserver availability, smoke test
 # TODO: do via chainsaw as well as check apiserver availability
 validateSeedClusters(){
-  echo validateSeedClusters: Not implemented.
+  echodate validateSeedClusters: Not implemented.
 }
 # deploy argo and kkp argo apps
 deployArgoApps() {
-  echo Deploying ArgoCD and KKP ArgoCD Apps.
+  echodate Deploying ArgoCD and KKP ArgoCD Apps.
   # TODO: variable for the ingress hostname
 	helm repo add dharapvj https://dharapvj.github.io/helm-charts/
 	helm repo add argo https://argoproj.github.io/argo-helm
@@ -110,9 +117,9 @@ deployArgoApps() {
 }
 # download kkp release and run kkp installer
 installKKP(){
-  echo installing KKP on master seed.
+  echodate installing KKP on master seed.
   if [ ! -d "${INSTALL_DIR}" ]; then
-    echo "$INSTALL_DIR does not exist. Downloading KKP release"
+    echodate "$INSTALL_DIR does not exist. Downloading KKP release"
     BIN_ARCH=linux-amd64
     mkdir -p ${INSTALL_DIR}/
     wget https://github.com/kubermatic/kubermatic/releases/download/${KKP_VERSION}/kubermatic-ee-${KKP_VERSION}-${BIN_ARCH}.tar.gz -O- | tar -xz --directory ${INSTALL_DIR}/
@@ -124,9 +131,9 @@ installKKP(){
 }
 # generate kubeconfig secret and make a git commit programatically and push tag
 generateNPushSeedKubeConfig() {
-  echo generating and pushing latest Seed Kubeconfig secrets.
+  echodate generating and pushing latest Seed Kubeconfig secrets.
 	local kubeconfig_b64=$(${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/${MASTER}/${CLUSTER_PREFIX}-${MASTER}-kubeconfig | base64 -w0)
-  # echo $kubeconfig_b64
+  # echodate $kubeconfig_b64
 	sed -i "/kubeconfig: /s/: .*/: `echo $kubeconfig_b64`/" ${ENV}/demo-master/seed-kubeconfig-secret-self.yaml
   # reset
   kubeconfig_b64=""
@@ -136,7 +143,7 @@ generateNPushSeedKubeConfig() {
   fi
   # automated git commit and push tag
   git add ${ENV}/demo-master/seed-kubeconfig-secret-india.yaml ${ENV}/demo-master/seed-kubeconfig-secret-self.yaml
-  git commit -m "Adding latest seed kubeconfigs so that Seed resources will reconcile correctly" || echo "ignore commit failure, proceed"
+  git commit -m "Adding latest seed kubeconfigs so that Seed resources will reconcile correctly" || echodate "ignore commit failure, proceed"
   git push origin main
   git tag -f ${ENV}-kkp-${KKP_VERSION}
 	git push origin -f ${ENV}-kkp-${KKP_VERSION}
@@ -144,37 +151,36 @@ generateNPushSeedKubeConfig() {
 # TODO: validate installation? Create user clusters, access MLA links etc.
 # more the merrier
 validateDemoInstallation() {
-  echo Validating the Demo Installation.
-  echo sleeping for many minutes while restarting some services to get cert-manager based certs clearly created.
+  echodate Validating the Demo Installation.
+  echodate sleeping for many minutes while restarting some services to get cert-manager based certs clearly created.
   # sleep for completion of installation of all services!
   sleep 4m
 
   # hack: need to work the DNS issues so that certs get created properly
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart deploy -n kube-system coredns
+  if [[ ${SEED} != false ]]; then
+    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n kube-system coredns
+  fi
   sleep 1m
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
+  if [[ ${SEED} != false ]]; then
+    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
+  fi
   sleep 8m
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
-  sleep 6m
-  KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig chainsaw test tests/e2e/master-seed
-
   if [[ ${SEED} != false ]]; then
-    echo now running e2e tests for seed
-    echo sleeping for many minutes while restarting some services to get cert-manager based certs clearly created.
-    # hack: need to work the DNS issues so that certs get created properly
-    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n kube-system coredns
-    sleep 1m
-    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
-    sleep 8m
     KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
-    sleep 6m
-    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig chainsaw test tests/e2e/seed-india
+  fi
+  sleep 6m
+  KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig chainsaw test tests/e2e/master-seed --namespace chainsaw
+  if [[ ${SEED} != false ]]; then
+    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig chainsaw test tests/e2e/seed-india --namespace chainsaw
   fi
 }
 
 # post validation, cleanup
 cleanup() {
-  echo cleanup all the cluster resources.
+  echodate cleanup all the cluster resources.
   # first destroy master so that kubermatic-operator is gone otherwise it tries to recreate seed node-port-proxy LB
 	KUBECONFIG=${MASTER_KUBECONFIG} kubectl delete app -n argocd nginx-ingress-controller || true
 	KUBECONFIG=${MASTER_KUBECONFIG} kubectl delete svc -n nginx-ingress-controller nginx-ingress-controller || true
@@ -193,7 +199,14 @@ cleanup() {
   fi
 }
 
-date
+# temp() {
+#   echodate "${IMAGE_PULL_SECRET_DATA:12:12}"
+#   export DECODE=$(echo $IMAGE_PULL_SECRET_DATA | base64 -d)
+#   echodate "${DECODE:12:12}"
+#   yq e  '.spec.imagePullSecret = strenv(DECODE)' dev/demo-master/k8cConfig.yaml > dev/demo-master/k8cConfig2.yaml
+# }
+
+echodate Starting KKP e2e test
 validatePreReq
 createSeedClusters
 validateSeedClusters
@@ -201,5 +214,5 @@ deployArgoApps
 installKKP
 generateNPushSeedKubeConfig
 validateDemoInstallation
-# cleanup
-date
+cleanup
+echodate Done
