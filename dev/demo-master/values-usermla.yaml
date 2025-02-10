@@ -24,6 +24,7 @@ iap:
       client_secret: xK7EjZM2gmp3DRrl0APlMkNDcS1hEf7m
       encryption_key: zg4HJdRpv2MvCIqGQvFoHZhUkYQXCw2C
       config:
+        approval_prompt: none
         scope: "groups openid email"
         email_domains:
           - "*"
@@ -46,6 +47,7 @@ iap:
       client_secret: LBZSAXMklV6Z1OWqHF2Fphgale1zY4TP
       encryption_key: XeX4PLvKY6XSOeaTPUt6YxluWxqylGue
       config:
+        approval_prompt: none
         scope: "groups openid email"
         email_domains:
           - "*"

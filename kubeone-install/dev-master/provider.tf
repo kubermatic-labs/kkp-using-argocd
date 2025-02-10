@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    # bucket = "kubermatic-e2e-test-tf"
-    bucket = "cluster-backup-e2e"
+    bucket = "kubermatic-e2e-test-tf"
+    #bucket = "cluster-backup-e2e"
     key    = "kkp-argocd-test/tfstate/dev-master"
     region = "eu-west-1"
   }

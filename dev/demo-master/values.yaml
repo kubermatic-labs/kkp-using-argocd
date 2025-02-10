@@ -164,6 +164,7 @@ iap:
       client_secret: 31XJHoWbktTYBbCIHchCeAaJtepPPS1W
       encryption_key: UADeR15wrVNEfqkhT8kIARNOA4Iy10un
       config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
+        approval_prompt: none
         scope: "groups openid email"
         #allowed_groups: Kubermatic_Managed_Service_Team
         email_domains:
@@ -181,6 +182,7 @@ iap:
       client_secret: noBMZ3jhWbKlep2Op9jDfDWg1DMgydCX
       encryption_key: 48wG5FXnPFrfMbWgFRrZ70LqlYHn3vu0
       config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
+        approval_prompt: none
         scope: "groups openid email"
         #allowed_groups: Kubermatic_Managed_Service_Team
         email_domains:
@@ -202,6 +204,7 @@ iap:
       client_secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
       encryption_key: 7jvKLRPcdnyAGadt9oKYvixpP3JhhrG2
       config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
+        approval_prompt: none
         scope: "groups openid email"
         #allowed_groups: Kubermatic_Managed_Service_Team
         email_domains:

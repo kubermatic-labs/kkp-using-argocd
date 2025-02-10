@@ -15,6 +15,7 @@ iap:
       client_secret: Xi1k5yHpMqDrfzFDnYx7X81fcWbeAhcr
       encryption_key: Xny2RZhxRU2OhYVzMGZyq5fBWOzti2iL
       config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
+        approval_prompt: none
         scope: "groups openid email"
         email_domains:
           - '*'
@@ -32,6 +33,7 @@ iap:
       client_secret: hdNKLfJ02K5bxT1DpWxR4o1iGBg4eqqt
       encryption_key: EKvkYcCKtuxJXPOifZl1nHQdYBf1z71k
       config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
+        approval_prompt: none
         scope: "groups openid email"
         email_domains:
           - '*'
@@ -53,6 +55,7 @@ iap:
       client_secret: SRqPgRKVLg3hd8srpdhqJUYwIL1BcS58
       encryption_key: Rj2TnSc52EoBm1nHjii0SRmSzo5dHoB7
       config: ## see https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/configuration/configuration.md
+        approval_prompt: none
         scope: "groups openid email"
         email_domains:
           - '*'
