@@ -1,0 +1,95 @@
+apiVersion: kubermatic.k8c.io/v1
+kind: Cluster
+metadata:
+  annotations:
+    kubermatic.io/initial-machinedeployment-request: |
+      {
+        "metadata": {
+          "name": "mjvrgosy95-node-pool",
+          "namespace": "kube-system",
+          "annotations": {
+            "k8c.io/operating-system-profile": "osp-ubuntu"
+          },
+          "finalizers": [
+            "foregroundDeletion"
+          ]
+        },
+        "spec": {
+          "replicas": 1,
+          "selector": {
+            "matchLabels": {
+              "machine": "md-mjvrgosy95-nm6w7cncg4"
+            }
+          },
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "machine": "md-mjvrgosy95-nm6w7cncg4"
+              }
+            },
+            "spec": {
+              "metadata": {
+                "creationTimestamp": null,
+                "labels": {}
+              },
+              "providerSpec": {
+                "value": {
+                  "cloudProvider": "aws",
+                  "cloudProviderSpec": {
+                    "assignPublicIP": true,
+                    "diskSize": 25,
+                    "diskType": "standard",
+                    "instanceProfile": "kubernetes-mjvrgosy95",
+                    "instanceType": "t3a.small",
+                    "region": "eu-west-3",
+                    "availabilityZone": "eu-central-1b",
+                    "securityGroupIDs": [
+                        "sg-02cbbe7468da5b7a8"
+                    ],
+                    "subnetId": "subnet-099419d7f8f4c6981",
+                    "vpcId": "vpc-0f923a77c89ca2d15"
+                  },
+                  "operatingSystem": "ubuntu",
+                  "operatingSystemSpec": {
+                    "distUpgradeOnBoot": false
+                  }
+                }
+              },
+              "versions": {
+                "kubelet": "1.31.1"
+              }
+            }
+          }
+        }
+      }
+  labels:
+    is-credential-preset: "true"
+    project-id: 28f79oztq8
+  # can be generated via `cat /dev/urandom | tr -dc a-z0-9 | head -c10`
+  name: mjvrgosy95
+spec:
+  cloud:
+    aws:
+      credentialsReference:
+        name: credential-aws-mjvrgosy95
+        namespace: kubermatic
+    dc: eu-west-3
+    providerName: aws
+  clusterNetwork:
+    proxyMode: ebpf
+  cniPlugin:
+    type: cilium
+  exposeStrategy: NodePort
+  features:
+    apiserverNetworkPolicy: true
+    ccmClusterName: true
+    etcdLauncher: true
+    externalCloudProvider: true
+  humanReadableName: demo-cluster
+  kubernetesDashboard:
+    enabled: true
+  mla:
+    loggingEnabled: true
+    monitoringEnabled: true
+  version: 1.31.1

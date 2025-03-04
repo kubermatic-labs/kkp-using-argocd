@@ -1,0 +1,18 @@
+# We need project, user binding?
+apiVersion: kubermatic.k8c.io/v1
+kind: Project
+metadata:
+  # can be generated via `cat /dev/urandom | tr -dc a-z0-9 | head -c10`
+  name: 28f79oztq8
+spec:
+  name: demo
+---
+apiVersion: kubermatic.k8c.io/v1
+kind: UserProjectBinding
+metadata:
+  name: rpjbdn9p4r
+spec:
+  group: owners-28f79oztq8
+  projectID: 28f79oztq8
+  # email must match what is configured in values.yaml for dex staticPasswords
+  userEmail: vijay@kubermatic.com
