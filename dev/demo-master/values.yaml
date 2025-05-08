@@ -15,128 +15,131 @@
 nginx:
   controller:
     config:
-      # FIXME: Not to be used in production environment. Using this only because we have staging cert for now.
+      # FIXME: Not to be used in production environment. Using this only because we have lensencrypt staging cert for now.
       hsts: false
 
 # Dex Is the OpenID Provider for Kubermatic.
 dex:
+  config:
+    staticClients:
+      # The "kubermatic" client is used for logging into the Kubermatic dashboard. It always needs to be configured.
+      - id: kubermatic
+        name: Kubermatic
+        # Generate a secure secret key
+        # Those can be generated on the shell using:
+        # cat /dev/urandom | tr -dc A-Za-z0-9 | head -c32
+        secret: VNfJgZlth5fJ3BpSd5QSKGwBdKeFAkGk
+        RedirectURIs:
+        # ensure the URLs below use the dex.ingress.host configured above
+        - https://argodemo.lab.kubermatic.io
+        - https://argodemo.lab.kubermatic.io/projects
+
+        # The "kubermaticIssuer" client is used for providing OIDC access to User Clusters.
+        # This configuration is optional, used if the "enableOIDCKubeconfig: true" option is used in KubermaticSetting.
+        # More about this configuration at https://docs.kubermatic.com/kubermatic/master/tutorials-howtos/oidc-provider-configuration/share-clusters-via-delegated-oidc-authentication/
+      - id: kubermaticIssuer
+        name: Kubermatic OIDC Issuer
+        # Generate a secure secret key
+        # Those can be generated on the shell using:
+        # cat /dev/urandom | tr -dc A-Za-z0-9 | head -c32
+        secret: IcT66lr0DT1BGD8zGXICL2azgnZ57VTd
+        RedirectURIs:
+          # ensure the URLs below use the dex.ingress.host configured above
+          - https://argodemo.lab.kubermatic.io/api/v1/kubeconfig
+          - https://argodemo.lab.kubermatic.io/api/v2/kubeconfig/secret
+          - https://argodemo.lab.kubermatic.io/api/v2/dashboard/login
+
+      - id: alertmanager
+        name: AlertManager
+        secret: 31XJHoWbktTYBbCIHchCeAaJtepPPS1W
+        RedirectURIs:
+        - https://alertmanager.argodemo.lab.kubermatic.io/oauth/callback
+      - id: grafana
+        name: Grafana
+        secret: noBMZ3jhWbKlep2Op9jDfDWg1DMgydCX
+        RedirectURIs:
+        - https://grafana.argodemo.lab.kubermatic.io/oauth/callback
+      - id: prometheus
+        name: Prometheus
+        secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
+        RedirectURIs:
+        - https://prometheus.argodemo.lab.kubermatic.io/oauth/callback
+      # India seed
+      - id: alertmanager_india
+        name: AlertManager for India seed cluster
+        secret: Xi1k5yHpMqDrfzFDnYx7X81fcWbeAhcr
+        RedirectURIs:
+        - https://alertmanager.india.argodemo.lab.kubermatic.io/oauth/callback
+      - id: grafana_india
+        name: Grafana for India seed cluster
+        secret: hdNKLfJ02K5bxT1DpWxR4o1iGBg4eqqt
+        RedirectURIs:
+        - https://grafana.india.argodemo.lab.kubermatic.io/oauth/callback
+      - id: prometheus_india
+        name: Prometheus for India seed cluster
+        secret: SRqPgRKVLg3hd8srpdhqJUYwIL1BcS58
+        RedirectURIs:
+        - https://prometheus.india.argodemo.lab.kubermatic.io/oauth/callback
+      # user-mla - self
+      - id: grafana_user_self
+        name: Grafana for Self User clusters
+        secret: xK7EjZM2gmp3DRrl0APlMkNDcS1hEf7m
+        RedirectURIs:
+        - https://grafana-user.self.seed.argodemo.lab.kubermatic.io/oauth/callback
+      - id: alertmanager_user_self
+        name: AlertManager for Self User clusters
+        secret: LBZSAXMklV6Z1OWqHF2Fphgale1zY4TP
+        RedirectURIs:
+        - https://alertmanager-user.self.seed.argodemo.lab.kubermatic.io/oauth/callback
+      # user-mla - india
+      - id: grafana_user_india
+        name: Grafana for India seed User clusters
+        secret: mZUKpqpmIbBrlzk4dJVfku7s8srKmZBa
+        RedirectURIs:
+        - https://grafana-user.india.seed.argodemo.lab.kubermatic.io/oauth/callback
+      - id: alertmanager_user_india
+        name: AlertManager for India Seed User clusters
+        secret: EYWeTkBfL4FdUBkxX2nievTj1JqzW5ad
+        RedirectURIs:
+        - https://alertmanager-user.india.seed.argodemo.lab.kubermatic.io/oauth/callback
+    # Depending on your chosen login method, you need to configure either an OAuth provider like
+    # Google or GitHub, or configure a set of static passwords. Check the `charts/dex/values.yaml`
+    # for an overview over all available connectors.
+
+    # ONLY Needed for static Users configured here. 
+    # Production grade setup should not use staticPasswords!
+    enablePasswordDB: true
+    # For testing purposes, we configure a single static user/password combination.
+    staticPasswords:
+    - email: vijay@kubermatic.com
+      # bcrypt hash of the string "password", can be created using recent versions of htpasswd:
+      # `htpasswd -bnBC 10 "" PASSWORD_HERE | tr -d ':\n' | sed 's/$2y/$2a/'`
+      # password: vj
+      hash: "$2b$10$bdy3m5CmqsDFy8iBPvJSGe4p5I.L3UuMpmCnEZ3WjhiXRaz8VWNSi"
+      # these are used within Kubermatic to identify the user
+      username: admin
+      userID: 08a8684b-db88-4b73-90a9-3cd1661f5466
+    - email: yash@kubermatic.com
+      # bcrypt hash of the string "password", can be created using recent versions of htpasswd:
+      # `htpasswd -bnBC 10 "" PASSWORD_HERE | tr -d ':\n' | sed 's/$2y/$2a/'`
+      # password: vj
+      username: yash
+      hash: "$2b$10$bdy3m5CmqsDFy8iBPvJSGe4p5I.L3UuMpmCnEZ3WjhiXRaz8VWNSi"
   ingress:
     # configure your base domain, under which the Kubermatic dashboard shall be available
-    host: argodemo.lab.kubermatic.io
-
-  clients:
-  # The "kubermatic" client is used for logging into the Kubermatic dashboard. It always needs to be configured.
-  - id: kubermatic
-    name: Kubermatic
-    # Generate a secure secret key
-    # Those can be generated on the shell using:
-    # cat /dev/urandom | tr -dc A-Za-z0-9 | head -c32
-    secret: VNfJgZlth5fJ3BpSd5QSKGwBdKeFAkGk
-    RedirectURIs:
-    # ensure the URLs below use the dex.ingress.host configured above
-    - https://argodemo.lab.kubermatic.io
-    - https://argodemo.lab.kubermatic.io/projects
-
-    # The "kubermaticIssuer" client is used for providing OIDC access to User Clusters.
-    # This configuration is optional, used if the "enableOIDCKubeconfig: true" option is used in KubermaticSetting.
-    # More about this configuration at https://docs.kubermatic.com/kubermatic/master/tutorials-howtos/oidc-provider-configuration/share-clusters-via-delegated-oidc-authentication/
-  - id: kubermaticIssuer
-    name: Kubermatic OIDC Issuer
-    # Generate a secure secret key
-    # Those can be generated on the shell using:
-    # cat /dev/urandom | tr -dc A-Za-z0-9 | head -c32
-    secret: IcT66lr0DT1BGD8zGXICL2azgnZ57VTd
-    RedirectURIs:
-      # ensure the URLs below use the dex.ingress.host configured above
-      - https://argodemo.lab.kubermatic.io/api/v1/kubeconfig
-      - https://argodemo.lab.kubermatic.io/api/v2/kubeconfig/secret
-      - https://argodemo.lab.kubermatic.io/api/v2/dashboard/login
-
-  - id: alertmanager
-    name: AlertManager
-    secret: 31XJHoWbktTYBbCIHchCeAaJtepPPS1W
-    RedirectURIs:
-    - https://alertmanager.argodemo.lab.kubermatic.io/oauth/callback
-  - id: grafana
-    name: Grafana
-    secret: noBMZ3jhWbKlep2Op9jDfDWg1DMgydCX
-    RedirectURIs:
-    - https://grafana.argodemo.lab.kubermatic.io/oauth/callback
-  - id: prometheus
-    name: Prometheus
-    secret: UXsiBXUnkpm8Xg1jQu1OYTBpfuazMC7X
-    RedirectURIs:
-    - https://prometheus.argodemo.lab.kubermatic.io/oauth/callback
-  # India seed
-  - id: alertmanager_india
-    name: AlertManager for India seed cluster
-    secret: Xi1k5yHpMqDrfzFDnYx7X81fcWbeAhcr
-    RedirectURIs:
-    - https://alertmanager.india.argodemo.lab.kubermatic.io/oauth/callback
-  - id: grafana_india
-    name: Grafana for India seed cluster
-    secret: hdNKLfJ02K5bxT1DpWxR4o1iGBg4eqqt
-    RedirectURIs:
-    - https://grafana.india.argodemo.lab.kubermatic.io/oauth/callback
-  - id: prometheus_india
-    name: Prometheus for India seed cluster
-    secret: SRqPgRKVLg3hd8srpdhqJUYwIL1BcS58
-    RedirectURIs:
-    - https://prometheus.india.argodemo.lab.kubermatic.io/oauth/callback
-  # user-mla - self
-  - id: grafana_user_self
-    name: Grafana for Self User clusters
-    secret: xK7EjZM2gmp3DRrl0APlMkNDcS1hEf7m
-    RedirectURIs:
-    - https://grafana-user.self.seed.argodemo.lab.kubermatic.io/oauth/callback
-  - id: alertmanager_user_self
-    name: AlertManager for Self User clusters
-    secret: LBZSAXMklV6Z1OWqHF2Fphgale1zY4TP
-    RedirectURIs:
-    - https://alertmanager-user.self.seed.argodemo.lab.kubermatic.io/oauth/callback
-  # user-mla - india
-  - id: grafana_user_india
-    name: Grafana for India seed User clusters
-    secret: mZUKpqpmIbBrlzk4dJVfku7s8srKmZBa
-    RedirectURIs:
-    - https://grafana-user.india.seed.argodemo.lab.kubermatic.io/oauth/callback
-  - id: alertmanager_user_india
-    name: AlertManager for India Seed User clusters
-    secret: EYWeTkBfL4FdUBkxX2nievTj1JqzW5ad
-    RedirectURIs:
-    - https://alertmanager-user.india.seed.argodemo.lab.kubermatic.io/oauth/callback
-
-  # Depending on your chosen login method, you need to configure either an OAuth provider like
-  # Google or GitHub, or configure a set of static passwords. Check the `charts/oauth/values.yaml`
-  # for an overview over all available connectors.
-
-  # For testing purposes, we configure a single static user/password combination.
-  staticPasswords:
-  - email: vijay@kubermatic.com
-    # bcrypt hash of the string "password", can be created using recent versions of htpasswd:
-    # `htpasswd -bnBC 10 "" PASSWORD_HERE | tr -d ':\n' | sed 's/$2y/$2a/'`
-    # password: vj
-    hash: "$2b$10$bdy3m5CmqsDFy8iBPvJSGe4p5I.L3UuMpmCnEZ3WjhiXRaz8VWNSi"
-    # these are used within Kubermatic to identify the user
-    username: admin
-    userID: 08a8684b-db88-4b73-90a9-3cd1661f5466
-  - email: yash@kubermatic.com
-    # bcrypt hash of the string "password", can be created using recent versions of htpasswd:
-    # `htpasswd -bnBC 10 "" PASSWORD_HERE | tr -d ':\n' | sed 's/$2y/$2a/'`
-    # password: vj
-    username: yash
-    hash: "$2b$10$bdy3m5CmqsDFy8iBPvJSGe4p5I.L3UuMpmCnEZ3WjhiXRaz8VWNSi"
-
-
-  # the cert-manager Issuer (or ClusterIssuer) responsible for managing the certificates
-  # If you want to deploy your own certificate without relying on cert-manager
-  # uncomment the next line and remove subsequent certIssuer configuration.
-  # certIssuer: null
-  certIssuer:
-    # For generating a certificate signed by a trusted root authority replace
-    # with "letsencrypt-prod".
-    name: letsencrypt-prod
-    kind: ClusterIssuer
+    host: 
+    enabled: true
+    hosts:
+      - host: argodemo.lab.kubermatic.io
+        paths:
+          - path: /dex
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: dex-tls
+        hosts:
+          - argodemo.lab.kubermatic.io
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
 
 telemetry:
   # uuid is the unique identifier of the client where the agent is running.

@@ -62,6 +62,11 @@ iap:
       ingress:
         host: "alertmanager-user.self.seed.argodemo.lab.kubermatic.io"
 
+# TESTING issues with mla-gateway-ext
+mlaSecrets:
+  grafana:
+    adminPassword: tjWrM9HvA1HQlbhN8RARjyGl
+
 # DEMO ONLY resource allocation. Not PROD GRADE!
 consul:
   server:
