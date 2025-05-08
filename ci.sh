@@ -9,13 +9,13 @@ set -euo pipefail
 
 # TODO: Accept the versions as Args or via a config file
 # To upgrade KKP, update the version of kkp here.
-KKP_VERSION=v2.27.0-alpha.1
+KKP_VERSION=v2.27.4
 #KKP_VERSION=v2.26.2
-K1_VERSION=1.8.3
+K1_VERSION=1.10.0
 ARGO_VERSION=5.36.10
 ENV=dev
 MASTER=dev-master
-# SEED=false # - don't create extra seed. Any other value - name of the seed
+#SEED=false # - don't create extra seed. Any other value - name of the seed
 SEED=dev-seed
 CLUSTER_PREFIX=argodemo
 
