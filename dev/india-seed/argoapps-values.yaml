@@ -12,7 +12,7 @@ nginx:
   enable: true
 certManager:
   enable: true
-oauth:
+dex:
   enable: false # not configuring seed-local-dex yet. Its TODO:
   autoSync: true
 seedSettings:

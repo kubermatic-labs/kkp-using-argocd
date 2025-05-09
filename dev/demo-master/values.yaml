@@ -21,6 +21,7 @@ nginx:
 # Dex Is the OpenID Provider for Kubermatic.
 dex:
   config:
+    issuer: "https://argodemo.lab.kubermatic.io/dex"
     staticClients:
       # The "kubermatic" client is used for logging into the Kubermatic dashboard. It always needs to be configured.
       - id: kubermatic
