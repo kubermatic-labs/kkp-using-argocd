@@ -1,4 +1,5 @@
-# TODO: Currently the subnetId provided changes after every terraform destroy. So we must update the subnet id below before cluster can get created.
+# TODO: Currently the subnetId and security group id provided changes after every terraform destroy. 
+# So we must update the subnet id below before cluster can get created.
 # This is quite unfortunate as this makes automation harder!
 apiVersion: kubermatic.k8c.io/v1
 kind: Cluster
@@ -46,6 +47,9 @@ metadata:
                     "instanceType": "t3a.small",
                     "region": "eu-west-3",
                     "availabilityZone": "eu-west-3b",
+                    "securityGroupIDs": [
+                        "sg-0ac252619f62cc8b3"
+                    ],
                     "subnetId": "subnet-0f851d2b18b1025a9",
                     "vpcId": "vpc-0f923a77c89ca2d15"
                   },
