@@ -44,9 +44,6 @@ metadata:
                     "instanceType": "t3a.small",
                     "region": "eu-west-3",
                     "availabilityZone": "eu-west-3b",
-                    "securityGroupIDs": [
-                        "sg-02cbbe7468da5b7a8"
-                    ],
                     "subnetId": "subnet-099419d7f8f4c6981",
                     "vpcId": "vpc-0f923a77c89ca2d15"
                   },
@@ -57,7 +54,7 @@ metadata:
                 }
               },
               "versions": {
-                "kubelet": "1.31.1"
+                "kubelet": "1.32.4"
               }
             }
           }
@@ -92,4 +89,4 @@ spec:
   mla:
     loggingEnabled: true
     monitoringEnabled: true
-  version: 1.31.1
+  version: 1.32.4
