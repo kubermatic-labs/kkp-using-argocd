@@ -4,3 +4,4 @@ binaries/**
 **/terraform.tfstate*
 *.tar.gz
 *-kubeconfig
+.env

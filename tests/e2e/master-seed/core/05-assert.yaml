@@ -8,13 +8,13 @@ metadata:
 status:
   readyReplicas: 3
 
-# oauth
+# dex
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dex
-  namespace: oauth
+  namespace: dex
 status:
   readyReplicas: 2
 
@@ -49,7 +49,7 @@ apiVersion:  networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: dex
-  namespace: oauth
+  namespace: dex
 status:
   loadBalancer:
     (length(ingress) > `0`): true

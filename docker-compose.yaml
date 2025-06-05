@@ -1,0 +1,14 @@
+# run kkp-gitops-ci:2025-05-06 image with volume as ci.sh
+version: '3.8'
+services:
+  kkp-gitops-ci:
+    image: kkp-gitops-ci:2025-05-06
+    container_name: kkp-gitops-ci
+    volumes:
+      - ./ci-containerized.sh:/home/ubuntu/ci-containerized.sh
+    command: sleep infinity
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - IMAGE_PULL_SECRET_DATA=${IMAGE_PULL_SECRET_DATA}
+    working_dir: /home/ubuntu/
