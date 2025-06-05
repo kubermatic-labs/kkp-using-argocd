@@ -71,7 +71,8 @@ iap:
 
 
 alertmanager:
-  storageSize: 4Gi
+  persistence:
+    size: 4Gi
 
 minio:
   storageClass: kubermatic-fast
