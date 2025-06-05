@@ -11,7 +11,7 @@ set -euo pipefail
 
 # TODO: Accept the versions as Args or via a config file
 # To upgrade KKP, update the version of kkp here.
-KKP_VERSION=v2.27.4
+KKP_VERSION=v2.28.0-rc.0
 #KKP_VERSION=v2.26.2
 K1_VERSION=1.10.0
 ARGO_VERSION=5.36.10
@@ -211,28 +211,28 @@ generateNPushSeedKubeConfig() {
 # more the merrier
 validateDemoInstallation() {
   echodate Validating the Demo Installation.
-  # echodate sleeping for many minutes while restarting some services to get cert-manager based certs clearly created.
-  # # sleep for completion of installation of all services!
-  # sleep 10m
+  echodate sleeping for many minutes while restarting some services to get cert-manager based certs clearly created.
+  # sleep for completion of installation of all services!
+  sleep 10m
 
-  # # hack: need to work the DNS issues so that certs get created properly
-  # KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart sts -n argocd argocd-application-controller
-  # KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart deploy -n kube-system coredns
-  # if [[ ${SEED} != false ]]; then
-  #   KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart sts -n argocd argocd-application-controller
-  #   KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n kube-system coredns
-  # fi
-  # sleep 1m
-  # KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
-  # if [[ ${SEED} != false ]]; then
-  #   KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
-  # fi
-  # sleep 8m
-  # KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
-  # if [[ ${SEED} != false ]]; then
-  #   KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
-  # fi
-  # sleep 6m
+  # hack: need to work the DNS issues so that certs get created properly
+  KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart sts -n argocd argocd-application-controller
+  KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart deploy -n kube-system coredns
+  if [[ ${SEED} != false ]]; then
+    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart sts -n argocd argocd-application-controller
+    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n kube-system coredns
+  fi
+  sleep 1m
+  KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
+  if [[ ${SEED} != false ]]; then
+    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart ds -n kube-system node-local-dns
+  fi
+  sleep 8m
+  KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
+  if [[ ${SEED} != false ]]; then
+    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n cert-manager cert-manager
+  fi
+  sleep 6m
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig chainsaw test tests/e2e/master-seed --namespace chainsaw
   if [[ ${SEED} != false ]]; then
     KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig chainsaw test tests/e2e/seed-india --namespace chainsaw
@@ -264,17 +264,16 @@ cleanup() {
 
 echodate Starting KKP e2e test
 
-# validatePreReq
-# restoreSshKey
-# checkoutTestRepo
+validatePreReq
+restoreSshKey
+checkoutTestRepo
 cd kkp-using-argocd
-# temp
-# createSeedClusters
-# validateSeedClusters
-# deployArgoApps
-# installKKP
-# generateNPushSeedKubeConfig
+createSeedClusters
+validateSeedClusters
+deployArgoApps
+installKKP
+generateNPushSeedKubeConfig
 validateDemoInstallation
-#cleanup
+cleanup
 
 echodate "KKP mgmt via ArgoCD CI tests completed..."
