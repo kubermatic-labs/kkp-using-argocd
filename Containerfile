@@ -44,7 +44,7 @@ RUN \
     chmod +x helm && \
     mv helm /usr/local/bin && \
     # KUBECTL
-    curl --fail -LO https://dl.k8s.io/$KUBECTL_A_VERSION/bin/linux/amd64/kubectl && \
+    curl --fail -LO https://dl.k8s.io/$KUBECTL_VERSION/bin/linux/amd64/kubectl && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin
 

@@ -224,7 +224,8 @@ iap:
           ingress.kubernetes.io/upstream-hash-by: "ip_hash" ## needed for prometheus federations
 
 alertmanager:
-  storageSize: 4Gi
+  persistence:
+    size: 4Gi
 
 minio:
   storageClass: kubermatic-fast
