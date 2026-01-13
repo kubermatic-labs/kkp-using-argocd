@@ -1,7 +1,7 @@
-K1_VERSION=1.10.0
+K1_VERSION=1.11.4
 # To upgrade KKP, update the version of kkp here.
 #KKP_VERSION=v2.25.11
-KKP_VERSION=v2.27.4
+KKP_VERSION=v2.28.5
 INSTALL_DIR=./binaries/kubermatic/releases/${KKP_VERSION}
 KUBEONE_INSTALL_DIR=./binaries/kubeone/releases/${K1_VERSION}
 MASTER_KUBECONFIG=./kubeone-install/dev-master/argodemo-dev-master-kubeconfig
@@ -95,3 +95,8 @@ deploy-external-dns:
 	helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/
 	helm repo update external-dns
 	helm upgrade --install external-dns external-dns/external-dns -f ./values-external-dns.yaml
+
+# How to build latest container image
+#podman build -t kkp-gitops-ci:2025-05-06 .
+#podman compose up --force-recreate -d
+#podman exec -it kkp-gitops-ci bash

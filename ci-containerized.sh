@@ -26,6 +26,8 @@ INSTALL_DIR=./binaries/kubermatic/releases/${KKP_VERSION}
 KUBEONE_INSTALL_DIR=./binaries/kubeone/releases/${K1_VERSION}
 MASTER_KUBECONFIG=./kubeone-install/${MASTER}/${CLUSTER_PREFIX}-${MASTER}-kubeconfig
 SEED_KUBECONFIG=./kubeone-install/${SEED}/${CLUSTER_PREFIX}-${SEED}-kubeconfig
+
+# helps save binaries without root access
 mkdir -p ~/.local/bin
 export PATH=$PATH:~/.local/bin
 
@@ -88,7 +90,6 @@ validatePreReq() {
     exit 1
   fi
 
-  # TODO: Review if we really need to save things once CI starts to work perfectly.
   # download and setup AWS CLI
   curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
   unzip -q awscliv2.zip
@@ -108,6 +109,7 @@ checkoutTestRepo() {
   echodate "Cloning the argocd gitops Git Repo"
   ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
   git clone git@github.com:kubermatic-labs/kkp-using-argocd.git
+  # TODO: We should use a specific tag for the given KKP release.
 }
 
 createSeedClusters() {
@@ -150,11 +152,12 @@ validateSeedClusters() {
 # deploy argo and kkp argo apps
 deployArgoApps() {
   echodate Deploying ArgoCD and KKP ArgoCD Apps.
-  # TODO: variable for the ingress hostname
   helm repo add dharapvj https://dharapvj.github.io/helm-charts/
   helm repo add argo https://argoproj.github.io/argo-helm
   helm repo update dharapvj
   helm repo update argo
+
+  # TODO: variable for the ingress hostname
   # master seed
   KUBECONFIG=${MASTER_KUBECONFIG} helm upgrade --install argocd --version ${ARGO_VERSION} --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set "server.ingress.hosts[0]=argocd.${CLUSTER_PREFIX}.lab.kubermatic.io" --set "server.ingress.tls[0].hosts[0]=argocd.${CLUSTER_PREFIX}.lab.kubermatic.io"
   KUBECONFIG=${MASTER_KUBECONFIG} helm upgrade --install kkp-argo-apps --set kkpVersion=${KKP_VERSION} -f ./${ENV}/demo-master/argoapps-values.yaml dharapvj/argocd-apps
