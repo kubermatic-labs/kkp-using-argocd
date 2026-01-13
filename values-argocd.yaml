@@ -17,12 +17,8 @@ server:
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
       cert-manager.io/cluster-issuer: letsencrypt-prod
     # supply this via --set so that we can use single ArgoCD def for all environments
-    # hosts: 
-    # - argocd.argodemo.lab.kubermatic.io
-    tls:
-    - secretName: argocd-tls-certificate
-      # hosts:
-      # - argocd.argodemo.lab.kubermatic.io
+    # hostname: argocd.argodemo.lab.kubermatic.io
+    tls: true
 # To be used for simpler local argocd setup
 #     paths:
 #       - /argocd/
