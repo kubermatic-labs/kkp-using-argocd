@@ -36,9 +36,20 @@ velero:
     requests:
       cpu: 10m
 
+grafana:
+  provisioning:
+    datasources:
+      # Kubernetes Service names to configure as data sources.
+      # Names can take the form of `service[.namespace=Release.Namespace][:port=9090]`
+      # and the service name itself must be unique.
+      prometheusServices:
+        - prometheus
+        # - thanos-query-frontend:9090  # FIXME: This should not be added after thanos is intergrated
+      lokiServices:
+        - loki
 
-promtail:
-  priorityClassName: system-node-critical  # This will ensure that promtail pods always get rolled out!
+alloy:
+  priorityClassName: system-node-critical  # This will ensure that alloy pods always get rolled out!
 
 # DEMO ONLY resource allocation. Not PROD GRADE!
 minio:

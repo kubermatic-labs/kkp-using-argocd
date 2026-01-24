@@ -9,7 +9,7 @@ set -euo pipefail
 
 # TODO: Accept the versions as Args or via a config file
 # To upgrade KKP, update the version of kkp here.
-KKP_VERSION=v2.28.5
+KKP_VERSION=v2.28.6
 #KKP_VERSION=v2.26.2
 K1_VERSION=1.11.4
 ARGO_VERSION=9.3.0
@@ -107,11 +107,11 @@ deployArgoApps() {
 	helm repo update dharapvj
   helm repo update argo
   # master seed
-	KUBECONFIG=${MASTER_KUBECONFIG} helm upgrade --install argocd --version ${ARGO_VERSION} --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set "server.ingress.hosts[0]=argocd.${CLUSTER_PREFIX}.lab.kubermatic.io" --set "server.ingress.tls[0].hosts[0]=argocd.${CLUSTER_PREFIX}.lab.kubermatic.io"
+	KUBECONFIG=${MASTER_KUBECONFIG} helm upgrade --install argocd --version ${ARGO_VERSION} --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set "server.ingress.hostname=argocd.${CLUSTER_PREFIX}.lab.kubermatic.io"
 	KUBECONFIG=${MASTER_KUBECONFIG} helm upgrade --install kkp-argo-apps --set kkpVersion=${KKP_VERSION} -f ./${ENV}/demo-master/argoapps-values.yaml dharapvj/argocd-apps
 
   if [[ ${SEED} != false ]]; then
-    KUBECONFIG=${SEED_KUBECONFIG} helm upgrade --install argocd --version ${ARGO_VERSION} --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set "server.ingress.hosts[0]=argocd.india.${CLUSTER_PREFIX}.lab.kubermatic.io" --set "server.ingress.tls[0].hosts[0]=argocd.india.${CLUSTER_PREFIX}.lab.kubermatic.io"
+    KUBECONFIG=${SEED_KUBECONFIG} helm upgrade --install argocd --version ${ARGO_VERSION} --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set "server.ingress.hostname=argocd.india.${CLUSTER_PREFIX}.lab.kubermatic.io"
     KUBECONFIG=${SEED_KUBECONFIG} helm upgrade --install kkp-argo-apps --set kkpVersion=${KKP_VERSION} -f ./${ENV}/india-seed/argoapps-values.yaml dharapvj/argocd-apps
   fi
 }

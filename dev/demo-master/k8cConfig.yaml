@@ -67,6 +67,10 @@ spec:
     issuerCookieKey: eL3DduBf10VeBM3bAwmfA6qIGvmTWXz4
     serviceAccountKey: lvURnM9KNg2ylBI7tA2SiKNhLcbuuzvg
 
+  applications:
+    defaultApplicationCatalog:
+      enable: true
+
 # DEMO ONLY resource allocation. Not PROD GRADE!
   api:
     resources:

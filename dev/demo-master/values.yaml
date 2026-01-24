@@ -148,7 +148,7 @@ telemetry:
   # You can generate uuid using command uuidgen on your linux machine
   uuid: cd190cf9-c3c7-4e22-9483-45fc994f55d7
 
-promtail:
+alloy:
   podLabels:
     env: dev
 loki:

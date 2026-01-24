@@ -80,5 +80,6 @@ spec:
   mlaGrafanaPrefix: grafana-user
   restrictProjectCreation: false
   restrictProjectDeletion: true
+  restrictProjectModification: false
   userProjectsLimit: 5
 

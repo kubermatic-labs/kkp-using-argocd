@@ -1,4 +1,4 @@
-promtail:
+alloy:
   podLabels:
     seed: india
 

@@ -98,5 +98,6 @@ deploy-external-dns:
 
 # How to build latest container image
 #podman build -t kkp-gitops-ci:2025-05-06 .
-#podman compose up --force-recreate -d
+# update image tag in docker-compose.yaml
+#podman compose --in-pod false up --force-recreate -d
 #podman exec -it kkp-gitops-ci bash

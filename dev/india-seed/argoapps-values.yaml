@@ -50,7 +50,7 @@ iapSeedMla:
   autoSync: true
 
 #logging
-promtail:
+alloy:
   enable: true
   autoSync: true
 loki:
