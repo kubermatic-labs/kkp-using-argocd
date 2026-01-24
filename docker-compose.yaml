@@ -2,7 +2,7 @@
 version: '3.8'
 services:
   kkp-gitops-ci:
-    image: kkp-gitops-ci:2025-05-06
+    image: localhost/kkp-gitops-ci:2026-01-24
     container_name: kkp-gitops-ci
     volumes:
       - ./ci-containerized.sh:/home/ubuntu/ci-containerized.sh

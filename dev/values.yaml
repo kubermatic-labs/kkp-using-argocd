@@ -47,6 +47,8 @@ grafana:
         # - thanos-query-frontend:9090  # FIXME: This should not be added after thanos is intergrated
       lokiServices:
         - loki
+    configuration:
+      auto_assign_org_role: Editor  # Without Editor - you won't see explore page
 
 alloy:
   priorityClassName: system-node-critical  # This will ensure that alloy pods always get rolled out!
