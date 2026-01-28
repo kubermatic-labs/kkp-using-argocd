@@ -73,3 +73,7 @@ consul:
     resource:
       requests:
         cpu: 40m
+minio:
+  resources:
+    requests:
+      memory: 1Gi
