@@ -1,5 +1,6 @@
 velero:
   # New options for KKP 2.26+
+  backupsEnabled: true
   snapshotsEnabled: false
   deployNodeAgent: false
   # Init containers to add to the Velero deployment's pod spec.

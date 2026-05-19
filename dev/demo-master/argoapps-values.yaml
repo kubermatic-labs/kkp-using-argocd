@@ -4,7 +4,9 @@ isMasterSeed: true
 
 kkpBasePath: "."
 
-repoURL: https://github.com/dharapvj/kkp-using-argocd.git
+# kkpRepoURL: https://github.com/dharapvj/kubermatic.git  # Repo where we can find all KKP helm charts
+
+repoURL: https://github.com/kubermatic-labs/kkp-using-argocd.git
 valuesPathPrefix: "." # This is prefix wrt environment folder e.g. /dev/
 
 # KKP Core
