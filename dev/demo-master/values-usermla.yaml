@@ -66,6 +66,9 @@ iap:
 mlaSecrets:
   grafana:
     adminPassword: tjWrM9HvA1HQlbhN8RARjyGl
+  minio:
+    secretKey: WiTwTIdtTARUpzwdFeM30AStNjUmvxxqSGKMee1j
+    accessKey: FiiRllrMizh61PdzZ71p
 
 # DEMO ONLY resource allocation. Not PROD GRADE!
 consul:
