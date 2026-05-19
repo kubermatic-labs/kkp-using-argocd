@@ -48,10 +48,10 @@ metadata:
                     "region": "eu-west-3",
                     "availabilityZone": "eu-west-3b",
                     "securityGroupIDs": [
-                        "sg-0ac252619f62cc8b3"
+                        "sg-0fa06ab29fccb91a1"
                     ],
-                    "subnetId": "subnet-0f851d2b18b1025a9",
-                    "vpcId": "vpc-0f923a77c89ca2d15"
+                    "subnetId": "subnet-03d798504250d1884",
+                    "vpcId": "vpc-0ec28a9ab0b046739"
                   },
                   "operatingSystem": "ubuntu",
                   "operatingSystemSpec": {
