@@ -50,7 +50,7 @@ metadata:
                     "securityGroupIDs": [
                         "sg-0fa06ab29fccb91a1"
                     ],
-                    "subnetId": "subnet-03d798504250d1884",
+                    "subnetId": "subnet-0dcdc7d92eb4143bf",
                     "vpcId": "vpc-0ec28a9ab0b046739"
                   },
                   "operatingSystem": "ubuntu",
