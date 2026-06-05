@@ -124,7 +124,7 @@ variable "aws_region" {
 }
 
 variable "vpc_id" {
-  default     = "default"
+  # default     = "default"
   description = "VPC to use ('default' for default VPC)"
   type        = string
 }

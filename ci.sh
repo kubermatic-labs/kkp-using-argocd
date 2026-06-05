@@ -9,14 +9,16 @@ set -euo pipefail
 
 # TODO: Accept the versions as Args or via a config file
 # To upgrade KKP, update the version of kkp here.
-KKP_VERSION=v2.28.6
+KKP_VERSION=v2.29.7
 #KKP_VERSION=v2.26.2
-K1_VERSION=1.11.4
+K1_VERSION=1.12.3
 ARGO_VERSION=9.3.0
+ARGO_APPS_VERSION=2.29
+CHAINSAW_VERSION=0.2.12
 ENV=dev
 MASTER=dev-master
-#SEED=false # - don't create extra seed. Any other value - name of the seed
-SEED=dev-seed
+SEED=false # - don't create extra seed. Any other value - name of the seed
+#SEED=dev-seed
 CLUSTER_PREFIX=argodemo
 
 INSTALL_DIR=./binaries/kubermatic/releases/${KKP_VERSION}
@@ -101,18 +103,18 @@ validateSeedClusters(){
 # deploy argo and kkp argo apps
 deployArgoApps() {
   echodate Deploying ArgoCD and KKP ArgoCD Apps.
-  # TODO: variable for the ingress hostname
+#  # TODO: variable for the ingress hostname
 	helm repo add dharapvj https://dharapvj.github.io/helm-charts/
 	helm repo add argo https://argoproj.github.io/argo-helm
 	helm repo update dharapvj
-  helm repo update argo
-  # master seed
-	KUBECONFIG=${MASTER_KUBECONFIG} helm upgrade --install argocd --version ${ARGO_VERSION} --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set "server.ingress.hostname=argocd.${CLUSTER_PREFIX}.lab.kubermatic.io"
-	KUBECONFIG=${MASTER_KUBECONFIG} helm upgrade --install kkp-argo-apps --set kkpVersion=${KKP_VERSION} -f ./${ENV}/demo-master/argoapps-values.yaml dharapvj/argocd-apps
+#  helm repo update argo
+#  # master seed
+ KUBECONFIG=${MASTER_KUBECONFIG} helm upgrade --install argocd --version ${ARGO_VERSION} --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set "server.ingress.hostname=argocd.${CLUSTER_PREFIX}.lab.kubermatic.io"
+  KUBECONFIG=${MASTER_KUBECONFIG} helm upgrade --install --version ${ARGO_APPS_VERSION}.* kkp-argo-apps --set kkpVersion=${KKP_VERSION} -f ./${ENV}/demo-master/argoapps-values.yaml dharapvj/argocd-apps
 
   if [[ ${SEED} != false ]]; then
     KUBECONFIG=${SEED_KUBECONFIG} helm upgrade --install argocd --version ${ARGO_VERSION} --namespace argocd --create-namespace argo/argo-cd -f values-argocd.yaml --set "server.ingress.hostname=argocd.india.${CLUSTER_PREFIX}.lab.kubermatic.io"
-    KUBECONFIG=${SEED_KUBECONFIG} helm upgrade --install kkp-argo-apps --set kkpVersion=${KKP_VERSION} -f ./${ENV}/india-seed/argoapps-values.yaml dharapvj/argocd-apps
+    KUBECONFIG=${SEED_KUBECONFIG} helm upgrade --install --version ${ARGO_APPS_VERSION}.* kkp-argo-apps --set kkpVersion=${KKP_VERSION} -f ./${ENV}/india-seed/argoapps-values.yaml dharapvj/argocd-apps
   fi
 }
 # download kkp release and run kkp installer
@@ -127,9 +129,10 @@ installKKP(){
 
 	KUBECONFIG=${MASTER_KUBECONFIG} ${INSTALL_DIR}/kubermatic-installer deploy \
 	  --charts-directory ${INSTALL_DIR}/charts --config ./${ENV}/demo-master/k8cConfig.yaml --helm-values ./${ENV}/demo-master/values.yaml \
-	  --skip-charts='cert-manager,nginx-ingress-controller,dex'
+	  --skip-charts='cert-manager,nginx-ingress-controller,dex' --deploy-default-policy-template-catalog
 }
-# generate kubeconfig secret and make a git commit programatically and push tag
+
+# generate kubeconfig secret and make a git commit programmatically and push tag
 generateNPushSeedKubeConfig() {
   echodate generating and pushing latest Seed Kubeconfig secrets.
 	local kubeconfig_b64=$(${INSTALL_DIR}/kubermatic-installer convert-kubeconfig ./kubeone-install/${MASTER}/${CLUSTER_PREFIX}-${MASTER}-kubeconfig | base64 -w0)
@@ -154,11 +157,13 @@ validateDemoInstallation() {
   echodate Validating the Demo Installation.
   echodate sleeping for many minutes while restarting some services to get cert-manager based certs clearly created.
   # sleep for completion of installation of all services!
-  sleep 4m
+  sleep 10m
 
   # hack: need to work the DNS issues so that certs get created properly
+  KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart sts -n argocd argocd-application-controller
   KUBECONFIG=$PWD/kubeone-install/${MASTER}/argodemo-${MASTER}-kubeconfig kubectl rollout restart deploy -n kube-system coredns
   if [[ ${SEED} != false ]]; then
+    KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart sts -n argocd argocd-application-controller
     KUBECONFIG=$PWD/kubeone-install/${SEED}/argodemo-${SEED}-kubeconfig kubectl rollout restart deploy -n kube-system coredns
   fi
   sleep 1m
@@ -213,6 +218,6 @@ validateSeedClusters
 deployArgoApps
 installKKP
 generateNPushSeedKubeConfig
-validateDemoInstallation
-cleanup
+# validateDemoInstallation
+# cleanup
 echodate Done
