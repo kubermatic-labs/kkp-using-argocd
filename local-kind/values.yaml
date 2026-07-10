@@ -1,0 +1,5 @@
+# Env-specific overlay for the "local-kind" ArgoCD environment. Intentionally
+# empty -- this environment has a single seed ("self", master==seed) and all
+# actual values live in local-kind/self/values.yaml. Kept as a file (rather
+# than omitted) because the kkp-argo-apps chart's valueFiles list references
+# it unconditionally.
