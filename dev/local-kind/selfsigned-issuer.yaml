@@ -1,0 +1,11 @@
+# Local-only replacement for dev/common/clusterIssuer.yaml's letsencrypt ACME
+# issuer. ACME needs a real, internet-reachable domain for the HTTP-01
+# challenge, which a kind cluster on localhost doesn't have. A self-signed
+# issuer needs nothing external -- browsers/clients will just need to accept
+# or skip the certificate warning.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}

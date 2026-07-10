@@ -1,6 +1,22 @@
 # Cluster that create one master and one node and is ready for nginx-ingress
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
+# Redirect pulls for these upstream registries through local pull-through-cache
+# mirrors (see kind-install/registry-mirror.sh) so repeated `kind delete/create`
+# cycles don't re-download the same images from the internet every time. The
+# mirror containers are connected to the "kind" podman network by
+# connectRegistryMirrorsToKindNetwork() in run-local-kind.sh, so they're
+# reachable from cluster nodes by container name.
+containerdConfigPatches:
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+    endpoint = ["http://kind-registry-docker:5000"]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."quay.io"]
+    endpoint = ["http://kind-registry-quay:5000"]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.k8s.io"]
+    endpoint = ["http://kind-registry-registryk8s:5000"]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."ghcr.io"]
+    endpoint = ["http://kind-registry-ghcr:5000"]
 nodes:
 - role: control-plane
   kubeadmConfigPatches:
@@ -10,11 +26,14 @@ nodes:
       kubeletExtraArgs:
         node-labels: "ingress-ready=true"
   extraPortMappings:
+  # Host ports are >=1024 because rootless podman can't bind privileged ports
+  # without a host-wide sysctl change. Container-side ports stay 80/443 since
+  # that's what the ingress-nginx pod itself listens on.
   - containerPort: 80
-    hostPort: 80
+    hostPort: 8080
     protocol: TCP
   - containerPort: 443
-    hostPort: 443
+    hostPort: 8443
     protocol: TCP
   # Enable this, if you want explicit workers
   # - role: worker

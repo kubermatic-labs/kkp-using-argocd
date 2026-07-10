@@ -1,0 +1,31 @@
+# Values for the kkp-argo-apps chart (published as dharapvj/argocd-apps),
+# used directly as a `helm upgrade --install -f` argument by
+# kind-install/run-local-kind.sh's installKkpArgoApps(). This file itself is
+# never pushed to git -- it's a local CLI artifact, same as how ci.sh uses
+# dev/demo-master/argoapps-values.yaml. Only dex/nginx/cert-manager are
+# ArgoCD-managed for local-kind so far; everything else stays directly
+# installed by kubermatic-installer (see installKKP()'s --skip-charts).
+environment: local-kind
+seed: self
+isMasterSeed: true
+
+kkpBasePath: "."
+
+# This repo -- run-local-kind.sh's pushGitopsValuesRef() renders and pushes
+# local-kind/values.yaml + local-kind/self/values.yaml here, to branch
+# "local-kind-gitops" and force-tag "local-kind-kkp-<kkpVersion>" (the tag is
+# what targetRevision actually resolves, per the kkp-argo-apps chart's
+# git-tag-version helper -- see run-local-kind.sh's comments).
+repoURL: https://github.com/kubermatic-labs/kkp-using-argocd.git
+valuesPathPrefix: "."
+
+# KKP Core -- only these three are ArgoCD-managed in this pass.
+dex:
+  enable: true
+  autoSync: true
+nginx:
+  enable: true
+  autoSync: true
+certManager:
+  enable: true
+  autoSync: true

@@ -1,0 +1,23 @@
+# Minimal Seed: master and seed are the same kind cluster. Datacenter uses
+# `bringyourown` -- no cloud credentials needed, KKP only runs the control
+# plane and you manually kubeadm-join worker nodes yourself.
+apiVersion: kubermatic.k8c.io/v1
+kind: Seed
+metadata:
+  name: kubermatic
+  namespace: kubermatic
+spec:
+  country: "IN"
+  location: "Local kind"
+  kubeconfig:
+    apiVersion: v1
+    kind: Secret
+    name: kind-local-seed-kubeconfig
+    fieldPath: kubeconfig
+    namespace: kubermatic
+  datacenters:
+    kind-byo:
+      country: "IN"
+      location: "Local kind (bring your own nodes)"
+      spec:
+        bringyourown: {}

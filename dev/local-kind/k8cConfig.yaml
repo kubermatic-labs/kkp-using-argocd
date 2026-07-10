@@ -1,0 +1,63 @@
+### Minimal KubermaticConfiguration for a local kind cluster (master == seed).
+### Adapted from dev/demo-master/k8cConfig.yaml: local domain (nip.io, resolves to
+### 127.0.0.1 with no DNS setup needed) + selfsigned cert-manager issuer (no ACME).
+
+apiVersion: kubermatic.k8c.io/v1
+kind: KubermaticConfiguration
+metadata:
+  name: kubermatic
+  namespace: kubermatic
+spec:
+  # insert the Docker authentication JSON provided by Kubermatic here
+  imagePullSecret:
+
+  ingress:
+    # __KKP_DOMAIN__ is templated at runtime by run-local-kind.sh into
+    # kkp.<wsl-ip>.nip.io -- a public DNS wildcard that resolves to whatever
+    # IP is embedded in it. Using the WSL VM's own IP instead of 127.0.0.1
+    # because Windows -> WSL2 localhost-forwarding doesn't work on this
+    # machine (likely blocked by managed-network security software), while
+    # the WSL VM's IP is directly reachable from Windows.
+    domain: __KKP_DOMAIN__
+    certificateIssuer:
+      apiGroup: null
+      kind: ClusterIssuer
+      name: "selfsigned-issuer"
+    className: nginx
+
+  featureGates:
+    OIDCKubeCfgEndpoint: true
+    OpenIDAuthPlugin: true
+
+  auth:
+    clientID: kubermatic
+    issuerClientID: kubermaticIssuer
+    # self-signed cert -- Kubermatic can't validate it against a public CA
+    skipTokenIssuerTLSVerify: true
+    # :8443 because rootless podman can't publish the standard 443 host port
+    # (see kind-install/cluster-nodeport.yaml)
+    tokenIssuer: https://__KKP_DOMAIN__:8443/dex
+
+    issuerClientSecret: IcT66lr0DT1BGD8zGXICL2azgnZ57VTd
+    issuerCookieKey: eL3DduBf10VeBM3bAwmfA6qIGvmTWXz4
+    serviceAccountKey: lvURnM9KNg2ylBI7tA2SiKNhLcbuuzvg
+
+  applications:
+    # keep this off for the first bring-up -- the default catalog is heavy
+    # and not needed to get a master+seed running.
+    defaultApplicationCatalog:
+      enable: false
+
+# DEMO ONLY resource allocation. Not PROD GRADE!
+  api:
+    resources:
+      requests:
+        cpu: 100m
+  masterController:
+    resources:
+      requests:
+        cpu: 20m
+  ui:
+    resources:
+      requests:
+        cpu: 100m

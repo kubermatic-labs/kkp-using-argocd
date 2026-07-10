@@ -1,0 +1,98 @@
+### Minimal Helm values for local kind bring-up.
+### Adapted from dev/demo-master/values.yaml: only the kubermatic + kubermaticIssuer
+### dex clients (no monitoring/MLA clients yet), local nip.io domain, and nginx
+### configured the way kind's own ingress guide recommends (hostNetwork + hostPort
+### on the "ingress-ready" node instead of a LoadBalancer service, since kind has
+### no cloud load balancer).
+###
+### replicaCount/resources overrides below are DEMO ONLY sizing for a single-node
+### kind cluster -- not prod grade. Chart defaults for this KKP version are
+### nginx=3 replicas, dex=2 replicas; cert-manager/its webhook/cainjector already
+### default to 1 replica each, so only their resource requests are trimmed here
+### (cpu values match the proven-safe convention already used for the real
+### kubeone-based envs in dev/values.yaml).
+
+nginx:
+  controller:
+    kind: Deployment
+    replicaCount: 1
+    hostNetwork: true
+    hostPort:
+      enabled: true
+    dnsPolicy: ClusterFirstWithHostNet
+    nodeSelector:
+      ingress-ready: "true"
+    service:
+      type: ClusterIP
+      # External access bypasses this Service entirely (hostNetwork+hostPort
+      # binds the pod directly to the node), so repurposing the Service's own
+      # port numbers to match our public :8080/:8443 is safe -- it only
+      # affects in-cluster DNS-based callers (see CoreDNS rewrite rule),
+      # letting __KKP_DOMAIN__:8443 resolve correctly for both.
+      ports:
+        http: 8080
+        https: 8443
+    admissionWebhooks:
+      enabled: false
+    config:
+      hsts: false
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+
+cert-manager:
+  resources:
+    requests:
+      cpu: 10m
+  webhook:
+    resources:
+      requests:
+        cpu: 10m
+
+dex:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 20m
+  config:
+    # :8443 because rootless podman can't publish the standard 443 host port
+    # (see kind-install/cluster-nodeport.yaml)
+    issuer: "https://__KKP_DOMAIN__:8443/dex"
+    staticClients:
+      - id: kubermatic
+        name: Kubermatic
+        secret: VNfJgZlth5fJ3BpSd5QSKGwBdKeFAkGk
+        RedirectURIs:
+        - https://__KKP_DOMAIN__:8443
+        - https://__KKP_DOMAIN__:8443/projects
+
+      - id: kubermaticIssuer
+        name: Kubermatic OIDC Issuer
+        secret: IcT66lr0DT1BGD8zGXICL2azgnZ57VTd
+        RedirectURIs:
+          - https://__KKP_DOMAIN__:8443/api/v1/kubeconfig
+          - https://__KKP_DOMAIN__:8443/api/v2/kubeconfig/secret
+          - https://__KKP_DOMAIN__:8443/api/v2/dashboard/login
+
+    enablePasswordDB: true
+    staticPasswords:
+    - email: vijay@kubermatic.com
+      # bcrypt hash of the string "password"
+      hash: "$2b$10$bdy3m5CmqsDFy8iBPvJSGe4p5I.L3UuMpmCnEZ3WjhiXRaz8VWNSi"
+      username: admin
+      userID: 08a8684b-db88-4b73-90a9-3cd1661f5466
+  ingress:
+    host:
+    enabled: true
+    hosts:
+      - host: __KKP_DOMAIN__
+        paths:
+          - path: /dex
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: dex-tls
+        hosts:
+          - __KKP_DOMAIN__
+    annotations:
+      cert-manager.io/cluster-issuer: selfsigned-issuer
