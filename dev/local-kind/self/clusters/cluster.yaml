@@ -86,7 +86,9 @@ spec:
   kubernetesDashboard: {}
   kyverno:
     enabled: false
-  mla: {}
+  mla:
+    loggingEnabled: true
+    monitoringEnabled: true
   oidc: {}
   opaIntegration:
     webhookTimeoutSeconds: 10

@@ -87,7 +87,17 @@ validateHostPreReqs() {
     local memlock_hardlimit
     memlock_hardlimit="$(ulimit -Hl)"
     if [ "$memlock_hardlimit" != "unlimited" ]; then
-      echodate "Error: memlock hard ulimit is '${memlock_hardlimit}', not 'unlimited' (cilium-agent needs it for eBPF maps). Fix: HANDOFF.md host-prereq #2, then re-run from a real login terminal (not VSCode-spawned) so sudo's PAM session picks it up."
+      # Root normally holds CAP_SYS_RESOURCE, which lets it raise its own
+      # hard rlimit at any time -- it doesn't need to have inherited
+      # "unlimited" from a login-session PAM stack in the first place. Self-
+      # heal here instead of depending on terminal type (see HANDOFF.md
+      # host-prereq #2 for why the inherited value can land at RAM/8 instead
+      # of unlimited even after a real login + sudo).
+      ulimit -H -l unlimited 2>/dev/null || true
+      memlock_hardlimit="$(ulimit -Hl)"
+    fi
+    if [ "$memlock_hardlimit" != "unlimited" ]; then
+      echodate "Error: memlock hard ulimit is '${memlock_hardlimit}', not 'unlimited' even after attempting to raise it directly with 'ulimit -H -l unlimited' (cilium-agent needs it for eBPF maps) -- this process appears to be missing CAP_SYS_RESOURCE. Fix: HANDOFF.md host-prereq #2, then re-run from a real login terminal (not VSCode-spawned) so sudo's PAM session picks it up."
       errors=1
     fi
 

@@ -45,6 +45,7 @@ spec:
   featureGates:
     OIDCKubeCfgEndpoint: true
     OpenIDAuthPlugin: true
+    UserClusterMLA: true
 
   auth:
     clientID: kubermatic

@@ -80,9 +80,19 @@ if ! mount | grep -q "/sys/fs/bpf type bpf"; then
 fi
 MEMLOCK_LIMIT="$(ulimit -Hl)"
 if [ "$MEMLOCK_LIMIT" != "unlimited" ]; then
-  echodate "WARNING: memlock hard ulimit is '${MEMLOCK_LIMIT}' (not unlimited)."
+  # Self-heal: this script is already running as root (see the re-exec
+  # block above) and root normally holds CAP_SYS_RESOURCE, which lets it
+  # raise its own hard rlimit directly, regardless of what it inherited
+  # from whatever terminal/session spawned it. See HANDOFF.md host-prereq
+  # #2 for why the inherited value can land at RAM/8 instead of unlimited
+  # even after a real login + sudo.
+  ulimit -H -l unlimited 2>/dev/null || true
+  MEMLOCK_LIMIT="$(ulimit -Hl)"
+fi
+if [ "$MEMLOCK_LIMIT" != "unlimited" ]; then
+  echodate "WARNING: memlock hard ulimit is '${MEMLOCK_LIMIT}' (not unlimited) even after attempting to raise it directly with 'ulimit -H -l unlimited'."
   echodate "  Cilium's eBPF maps may fail with 'failed to set memlock rlimit: operation not permitted'."
-  echodate "  See kind-install/HANDOFF.md for how to raise it (needs a fresh login session)."
+  echodate "  This process appears to be missing CAP_SYS_RESOURCE -- see kind-install/HANDOFF.md host-prereq #2."
 fi
 
 K8S_VERSION="$(kubectl get cluster "${CLUSTER_NAME}" -o jsonpath='{.spec.version}')"
