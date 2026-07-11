@@ -7,10 +7,48 @@
 # single-node kind cluster, local nip.io domain + selfsigned issuer instead
 # of letsencrypt.
 
+# replicas trimmed to 1 for the single-node kind cluster (chart defaults:
+# loki-distributed ingester=3, distributor=2). ingester replication_factor
+# is dropped to match -- otherwise writes fail quorum since the distributor
+# requires floor(RF/2)+1 live ingesters.
+loki-distributed:
+  loki:
+    structuredConfig:
+      ingester:
+        lifecycler:
+          ring:
+            replication_factor: 1
+  ingester:
+    replicas: 1
+  distributor:
+    replicas: 1
+
+# replicas trimmed to 1 for the single-node kind cluster (chart defaults:
+# alertmanager=2, distributor=2, ingester=3, querier=2, memcached-blocks*=2
+# each). ingester replication_factor is dropped to match -- otherwise writes
+# fail quorum since the distributor requires floor(RF/2)+1 live ingesters.
 cortex:
+  config:
+    ingester:
+      lifecycler:
+        ring:
+          replication_factor: 1
   alertmanager:
+    replicas: 1
     persistentVolume:
       size: 1Gi
+  distributor:
+    replicas: 1
+  ingester:
+    replicas: 1
+  querier:
+    replicas: 1
+  memcached-blocks:
+    replicaCount: 1
+  memcached-blocks-index:
+    replicaCount: 1
+  memcached-blocks-metadata:
+    replicaCount: 1
   compactor:
     persistentVolume:
       size: 1Gi
@@ -85,6 +123,9 @@ mlaSecrets:
 # DEMO ONLY resource allocation. Not PROD GRADE!
 consul:
   server:
+    # chart wrapper default is 3 (for HA); trimmed to 1 for the single-node
+    # kind cluster.
+    replicas: 1
     resource:
       requests:
         cpu: 20m

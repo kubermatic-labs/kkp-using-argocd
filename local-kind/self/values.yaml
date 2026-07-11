@@ -125,15 +125,22 @@ dex:
         hosts:
           - kkp.172.22.173.121.nip.io
     annotations:
-      cert-manager.io/cluster-issuer: selfsigned-issuer
+      # ca-issuer (dev/local-kind/ca-issuer.yaml), not selfsigned-issuer:
+      # IAP's oauth2-proxy needs to trust dex's cert, which requires a real
+      # CA (CA:TRUE) trust anchor -- a plain selfSigned-issuer leaf cert
+      # (CA:FALSE) fails x509 verification even though issuer == subject.
+      cert-manager.io/cluster-issuer: ca-issuer
 
 ### Everything below is newly ArgoCD-managed monitoring/logging/backup/storage
 ### for a fully-functional seed, kept to the same "DEMO ONLY, not PROD GRADE"
 ### minimal-resource convention as dev/values.yaml (which the real kubeone-based
 ### envs use) -- sizing here is trimmed further for a single-node kind cluster.
 
-#monitoring
+#monitoring -- replicas trimmed to 1 for the single-node kind cluster (chart
+# defaults are prometheus=2, alertmanager=3, which can't all schedule/fit on
+# one node and end up Pending).
 prometheus:
+  replicas: 1
   containers:
     prometheus:
       resources:
@@ -141,6 +148,7 @@ prometheus:
           cpu: 50m
 
 alertmanager:
+  replicaCount: 1
   persistence:
     size: 1Gi
   resources:
@@ -239,10 +247,14 @@ minio:
 
 # IAP (oauth2-proxy) fronting the seed-level MLA dashboards. customProviderCA
 # points at a Secret this repo's run-local-kind.sh creates
-# (createIapTrustedCaSecret()) by copying dex's own cert-manager-issued
-# tls.crt -- since dex's cert comes from the `selfsigned-issuer` ClusterIssuer,
-# the leaf cert IS its own CA (self-signed), so oauth2-proxy just needs that
-# same cert to trust dex's HTTPS endpoint when it calls out to the OIDC issuer.
+# (createIapTrustedCaSecret()) by copying the local-kind root CA's cert
+# (dev/local-kind/ca-issuer.yaml, secret local-kind-ca-secret in the
+# cert-manager namespace) -- dex's own ingress cert is issued by that CA
+# (see the `ca-issuer` annotation on dex's ingress below), so oauth2-proxy
+# trusts it when it calls out to the OIDC issuer. A plain selfSigned-issuer
+# leaf cert would NOT work here even though issuer == subject: it has Basic
+# Constraints CA:FALSE, which Go's crypto/x509 verifier refuses to treat as
+# a trust anchor.
 iap:
   oidc_issuer_url: https://kkp.172.22.173.121.nip.io:8443/dex
   customProviderCA:
