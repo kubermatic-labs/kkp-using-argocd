@@ -38,6 +38,17 @@ Just run `./kind-install/run-local-kind.sh` again — it deletes and recreates
 the kind cluster every time, but the registry mirrors and their image cache
 persist (not torn down), so repeat runs are faster.
 
+If a run got past cluster creation but failed/timed out later (e.g. ArgoCD
+was still cold-starting when a wait timed out), you don't have to lose the
+cluster to retry — everything after cluster creation is idempotent:
+
+```
+RECREATE_CLUSTER=false ./kind-install/run-local-kind.sh
+```
+
+This reuses the existing kind cluster and just re-runs (and re-waits on)
+every step against it.
+
 ## 4. (Optional) join a worker node to a user cluster
 
 Create a `bringyourown` cluster (dashboard, or `kubectl apply -f
@@ -48,11 +59,24 @@ kind-install/test-cluster.yaml`), then:
 ./kind-install/manage-usercluster-tunnels.sh <cluster-name> start
 ```
 
+## 5. Clean up
+
+```
+./kind-install/cleanup.sh
+```
+
+No arguments — nukes everything: all joined worker node containers + their
+volumes, all background tunnels, and the kind cluster itself. Registry
+mirrors are deliberately left alone (they're the permanent cache) — the
+script prints how to remove those too if you really want to.
+
 ## Troubleshooting
 
 - `sudo: a terminal is required` → you're in a non-interactive shell; open a
   real terminal.
-- ArgoCD Apps stuck `Progressing`/`Unknown` → `patchCoreDNSForLocalDomain`
-  and `applySelfSignedIssuer` both retry-wait for nginx/cert-manager to come
-  up asynchronously; give it a couple more minutes before digging further.
+- ArgoCD Apps stuck `Progressing`/`Unknown` → `waitForArgoApps` already waits
+  up to 8m per app (dex/nginx-ingress-controller/cert-manager) and prints
+  `kubectl describe application ...` on timeout; read that output first. If
+  it times out, re-run with `RECREATE_CLUSTER=false` (see above) instead of
+  starting over.
 - Full context / failure history: `kind-install/HANDOFF.md`.

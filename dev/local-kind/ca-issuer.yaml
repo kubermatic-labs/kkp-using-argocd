@@ -1,0 +1,36 @@
+# Root CA for this local kind cluster, so oauth2-proxy (IAP) can actually
+# trust dex's HTTPS endpoint. The plain `selfsigned-issuer` ClusterIssuer
+# (selfsigned-issuer.yaml) issues each leaf cert (dex-tls, etc.) with
+# issuer == subject but Basic Constraints CA:FALSE and no certSign key usage --
+# a valid TLS server cert, but Go's crypto/x509 verifier refuses to treat a
+# CA:FALSE cert as a trust anchor. That's exactly the error IAP's oauth2-proxy
+# hit: "x509: invalid signature: parent certificate cannot sign this kind of
+# certificate". A real CA cert (CA:TRUE + certSign) is needed instead.
+#
+# The Certificate below must live in cert-manager's own namespace
+# (`cert-manager`, the default --cluster-resource-namespace) since
+# ClusterIssuer secretRefs are resolved there.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: local-kind-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: local-kind-ca
+  secretName: local-kind-ca-secret
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: ca-issuer
+spec:
+  ca:
+    secretName: local-kind-ca-secret

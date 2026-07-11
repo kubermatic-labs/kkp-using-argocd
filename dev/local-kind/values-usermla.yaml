@@ -1,0 +1,136 @@
+# Values for the user-cluster MLA stack (userMla.* apps in
+# dev/local-kind/argoapps-values.yaml), rendered and pushed by
+# run-local-kind.sh's pushGitopsValuesRef() to local-kind/self/values-usermla.yaml
+# (path the kkp-argo-apps chart's argo-cd-apps.user-mla-values-file.path
+# template resolves to). Adapted from dev/demo-master/values-usermla.yaml:
+# same minimal-resource "DEMO ONLY" convention, trimmed further for a
+# single-node kind cluster, local nip.io domain + selfsigned issuer instead
+# of letsencrypt.
+
+# replicas trimmed to 1 for the single-node kind cluster (chart defaults:
+# loki-distributed ingester=3, distributor=2). ingester replication_factor
+# is dropped to match -- otherwise writes fail quorum since the distributor
+# requires floor(RF/2)+1 live ingesters.
+loki-distributed:
+  loki:
+    structuredConfig:
+      ingester:
+        lifecycler:
+          ring:
+            replication_factor: 1
+  ingester:
+    replicas: 1
+  distributor:
+    replicas: 1
+
+# replicas trimmed to 1 for the single-node kind cluster (chart defaults:
+# alertmanager=2, distributor=2, ingester=3, querier=2, memcached-blocks*=2
+# each). ingester replication_factor is dropped to match -- otherwise writes
+# fail quorum since the distributor requires floor(RF/2)+1 live ingesters.
+cortex:
+  config:
+    ingester:
+      lifecycler:
+        ring:
+          replication_factor: 1
+  alertmanager:
+    replicas: 1
+    persistentVolume:
+      size: 1Gi
+  distributor:
+    replicas: 1
+  ingester:
+    replicas: 1
+  querier:
+    replicas: 1
+  memcached-blocks:
+    replicaCount: 1
+  memcached-blocks-index:
+    replicaCount: 1
+  memcached-blocks-metadata:
+    replicaCount: 1
+  compactor:
+    persistentVolume:
+      size: 1Gi
+  store_gateway:
+    persistentVolume:
+      size: 1Gi
+
+iap:
+  oidc_issuer_url: https://__KKP_DOMAIN__:8443/dex
+  customProviderCA:
+    secretName: selfsigned-ca-cert
+    secretKey: ca.crt
+  deployments:
+    grafana:
+      name: grafana
+      replicas: 1
+      client_id: grafana_user_self
+      client_secret: xK7EjZM2gmp3DRrl0APlMkNDcS1hEf7m
+      encryption_key: zg4HJdRpv2MvCIqGQvFoHZhUkYQXCw2C
+      config:
+        approval_prompt: none
+        scope: "groups openid email"
+        email_domains:
+          - "*"
+        skip_auth_regex:
+          - "/api/health"
+        pass_user_headers: true
+        upstream_timeout: "5m"
+      upstream_service: grafana.mla.svc.cluster.local
+      upstream_port: 80
+      ingress:
+        host: "grafana-user.__KKP_DOMAIN__"
+        tls:
+          - secretName: grafana-user-iap-tls
+            hosts:
+              - "grafana-user.__KKP_DOMAIN__"
+        annotations:
+          cert-manager.io/cluster-issuer: selfsigned-issuer
+
+    alertmanager:
+      name: alertmanager
+      replicas: 1
+      client_id: alertmanager_user_self
+      client_secret: LBZSAXMklV6Z1OWqHF2Fphgale1zY4TP
+      encryption_key: XeX4PLvKY6XSOeaTPUt6YxluWxqylGue
+      config:
+        approval_prompt: none
+        scope: "groups openid email"
+        email_domains:
+          - "*"
+        skip_auth_regex:
+          - "/ready"
+        pass_user_headers: true
+      upstream_service: alertmanager-proxy.mla.svc.cluster.local
+      upstream_port: 8080
+      ingress:
+        host: "alertmanager-user.__KKP_DOMAIN__"
+        tls:
+          - secretName: alertmanager-user-iap-tls
+            hosts:
+              - "alertmanager-user.__KKP_DOMAIN__"
+        annotations:
+          cert-manager.io/cluster-issuer: selfsigned-issuer
+
+mlaSecrets:
+  grafana:
+    adminPassword: tjWrM9HvA1HQlbhN8RARjyGl
+  minio:
+    secretKey: WiTwTIdtTARUpzwdFeM30AStNjUmvxxqSGKMee1j
+    accessKey: FiiRllrMizh61PdzZ71p
+
+# DEMO ONLY resource allocation. Not PROD GRADE!
+consul:
+  server:
+    # chart wrapper default is 3 (for HA); trimmed to 1 for the single-node
+    # kind cluster.
+    replicas: 1
+    resource:
+      requests:
+        cpu: 20m
+minio:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 10m

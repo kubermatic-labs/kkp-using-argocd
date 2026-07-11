@@ -20,8 +20,8 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-CLUSTER_NAME="${1:?Usage: $0 <cluster-name> {start|stop|status}}"
-ACTION="${2:?Usage: $0 <cluster-name> {start|stop|status}}"
+CLUSTER_NAME="${1:?Usage: $0 <cluster-name> [start|stop|status]}"
+ACTION="${2:?Usage: $0 <cluster-name> [start|stop|status]}"
 NAMESPACE="cluster-${CLUSTER_NAME}"
 
 KIND_CLUSTER_NAME="${KIND_CLUSTER_NAME:-kkp-local}"

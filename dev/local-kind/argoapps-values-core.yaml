@@ -1,0 +1,36 @@
+# "Phase 1" values for the kkp-argo-apps chart -- dex/nginx/cert-manager ONLY.
+# installKkpArgoAppsCore() in run-local-kind.sh applies this first and
+# waitForArgoApps() waits for it, *before* the full app set
+# (argoapps-values.yaml) is applied by installKkpArgoAppsFull(). This is a
+# concurrency-limiting measure, not just a chart-values split: creating an
+# ArgoCD Application immediately triggers reconciliation + pod scheduling, so
+# applying the full ~20-Application set in one shot means every one of them
+# fights dex/nginx/cert-manager for the same single kind node's image-pull
+# and process/fork budget right when those three matter most. Confirmed live
+# (2026-07-11) on a full-stack run: dex's image pull queued 2m18s behind
+# everything else before it even started, and nginx-ingress-controller hit
+# ImagePullBackOff with `fork/exec /usr/bin/unpigz: resource temporarily
+# unavailable` -- a process/fork-limit exhaustion from ~40 pods across ~20
+# Applications all starting at once, not a slow git clone (repo-server logs
+# showed both git fetches completing in under a second -- sparse checkout
+# would not have helped here). Splitting the rollout into two phases keeps
+# the peak concurrent pod-start count down during the window that actually
+# gates installKKP.
+environment: local-kind
+seed: self
+isMasterSeed: true
+
+kkpBasePath: "."
+
+repoURL: https://github.com/kubermatic-labs/kkp-using-argocd.git
+valuesPathPrefix: "."
+
+dex:
+  enable: true
+  autoSync: true
+nginx:
+  enable: true
+  autoSync: true
+certManager:
+  enable: true
+  autoSync: true

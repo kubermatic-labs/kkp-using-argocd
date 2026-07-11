@@ -2,9 +2,17 @@
 # used directly as a `helm upgrade --install -f` argument by
 # kind-install/run-local-kind.sh's installKkpArgoApps(). This file itself is
 # never pushed to git -- it's a local CLI artifact, same as how ci.sh uses
-# dev/demo-master/argoapps-values.yaml. Only dex/nginx/cert-manager are
-# ArgoCD-managed for local-kind so far; everything else stays directly
-# installed by kubermatic-installer (see installKKP()'s --skip-charts).
+# dev/demo-master/argoapps-values.yaml. Mirrors dev/demo-master/argoapps-values.yaml
+# (full ArgoCD-managed stack) with two deliberate omissions: seedSettings (just
+# KubermaticSetting branding/UI polish, not needed for a functional seed) and
+# thanos (unused upstream, same as demo-master). Everything else -- including
+# project/test cluster creation via seedExtras -- is ArgoCD-managed; only
+# cert-manager, nginx-ingress-controller and dex are still installer-deployed
+# directly (see installKKP()'s --skip-charts) since KKP's own installer needs
+# a working ingress+dex+certs to reconcile at all. All other charts sync async
+# and are NOT waited on (see waitForArgoApps()) -- installKKP proceeds right
+# after those three, same as ci.sh cruises past deployArgoApps() straight into
+# installKKP().
 environment: local-kind
 seed: self
 isMasterSeed: true
@@ -12,14 +20,17 @@ isMasterSeed: true
 kkpBasePath: "."
 
 # This repo -- run-local-kind.sh's pushGitopsValuesRef() renders and pushes
-# local-kind/values.yaml + local-kind/self/values.yaml here, to branch
-# "local-kind-gitops" and force-tag "local-kind-kkp-<kkpVersion>" (the tag is
-# what targetRevision actually resolves, per the kkp-argo-apps chart's
-# git-tag-version helper -- see run-local-kind.sh's comments).
+# local-kind/values.yaml + local-kind/self/values.yaml (+ values-usermla.yaml,
+# + self/clusters/*.yaml) here, to branch "local-kind-gitops" and force-tag
+# "local-kind-kkp-<kkpVersion>" (the tag is what targetRevision actually
+# resolves, per the kkp-argo-apps chart's git-tag-version helper -- see
+# run-local-kind.sh's comments).
 repoURL: https://github.com/kubermatic-labs/kkp-using-argocd.git
 valuesPathPrefix: "."
 
-# KKP Core -- only these three are ArgoCD-managed in this pass.
+# KKP Core -- only these three are ArgoCD-managed AND waited on
+# (waitForArgoApps) before installKKP runs, since the installer itself needs
+# them up to reconcile.
 dex:
   enable: true
   autoSync: true
@@ -29,3 +40,86 @@ nginx:
 certManager:
   enable: true
   autoSync: true
+
+# Project + test cluster (bringyourown) creation -- see
+# dev/local-kind/self/clusters/{project,cluster}.yaml. Not waited on; ArgoCD
+# applies these once its own Application controller is up, same async
+# treatment as everything below.
+seedExtras:
+  enable: true
+  autoSync: true
+
+#monitoring
+prometheus:
+  enable: true
+  autoSync: true
+alertManager:
+  enable: true
+  autoSync: true
+grafana:
+  enable: true
+  autoSync: true
+kubeStateMetrics:
+  enable: true
+  autoSync: true
+nodeExporter:
+  enable: true
+  autoSync: true
+blackboxExporter:
+  enable: true
+  autoSync: true
+thanos:
+  enable: false
+  autoSync: true
+iapSeedMla:
+  enable: true
+  autoSync: true
+
+#logging
+alloy:
+  enable: true
+  autoSync: true
+loki:
+  enable: true
+  autoSync: true
+
+#backup
+velero:
+  enable: true
+  autoSync: true
+
+# storage
+minio:
+  enable: true
+  autoSync: true
+
+#user cluster mla
+userMla:
+  enable: true
+  minio:
+    enable: true
+    autoSync: true
+  minioLifecycleMgr:
+    enable: true
+    autoSync: true
+  grafana:
+    enable: true
+    autoSync: true
+  consul:
+    enable: true
+    autoSync: true
+  cortex:
+    enable: true
+    autoSync: true
+  lokiDistributed:
+    enable: true
+    autoSync: true
+  alertmanagerProxy:
+    enable: true
+    autoSync: true
+  iapMla:
+    enable: true
+    autoSync: true
+  secrets:
+    enable: true
+    autoSync: true

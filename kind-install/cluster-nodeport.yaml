@@ -7,6 +7,13 @@ apiVersion: kind.x-k8s.io/v1alpha4
 # mirror containers are connected to the "kind" podman network by
 # connectRegistryMirrorsToKindNetwork() in run-local-kind.sh, so they're
 # reachable from cluster nodes by container name.
+#
+# This is a static duplicate of registry-mirror.sh's REGISTRY_MIRRORS (kind's
+# own config is a plain YAML file, not rendered at runtime) -- keep both in
+# sync if the mirror list changes. join-usercluster-node.sh's worker
+# container needs the identical config applied separately (it never goes
+# through `kind create cluster`, so doesn't get this file at all), via
+# registryMirrorContainerdConfig() in registry-mirror.sh.
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
@@ -35,6 +42,16 @@ nodes:
   - containerPort: 443
     hostPort: 8443
     protocol: TCP
+  extraMounts:
+  # Persists ArgoCD repo-server's git clone cache (see run-local-kind.sh's
+  # ARGOCD_REPO_CACHE_HOST_DIR / installArgoCD's repoServer.existingVolumes.tmp
+  # override) across `kind delete/create` cycles -- same idea as the registry
+  # mirrors above, but for git clones of the (large) kkpRepoURL repo instead
+  # of container images. Directory must exist on the host and be owned by
+  # uid 999 before this runs; run-local-kind.sh's ensureArgoRepoCacheDir()
+  # does that.
+  - hostPath: /var/lib/local-kind-argocd-repo-cache
+    containerPath: /mnt/argocd-repo-cache
   # Enable this, if you want explicit workers
   # - role: worker
   # - role: worker

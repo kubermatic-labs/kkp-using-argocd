@@ -3,17 +3,24 @@
 # Quickest possible KKP bring-up on a local kind cluster: master == seed,
 # no AWS/kubeone/Vault. DNS and certs are solved by using a nip.io wildcard
 # domain (resolves to whatever IP is embedded in it, no dnsmasq needed) and
-# a cert-manager selfSigned ClusterIssuer (no ACME needed). dex,
-# cert-manager and nginx-ingress-controller are ArgoCD-managed (see
-# installArgoCD/installKkpArgoApps below); everything else is still deployed
-# directly by kubermatic-installer.
+# a cert-manager selfSigned ClusterIssuer (no ACME needed). dex, cert-manager
+# and nginx-ingress-controller are ArgoCD-managed and waited on (see
+# installArgoCD/installKkpArgoApps/waitForArgoApps below) since the installer
+# itself needs them up; everything else KKP can offer -- monitoring, logging,
+# backup, storage, IAP, user-cluster MLA, even the test project/cluster itself
+# (seedExtras) -- is also ArgoCD-managed (dev/local-kind/argoapps-values.yaml)
+# but syncs async in the background, same as ci.sh's deployArgoApps() cruises
+# straight into installKKP without waiting on any of it.
 #
 # Steps: 1) kind cluster (with local pull-through registry mirrors)
-#        2) ArgoCD + kkp-argo-apps (dex/cert-manager/nginx-ingress-controller)
-#        3) kubermatic-installer deploy (remaining charts, --skip-charts for
+#        2) ArgoCD + kkp-argo-apps (full app set, see argoapps-values.yaml)
+#        3) wait for dex/cert-manager/nginx-ingress-controller only
+#        4) kubermatic-installer deploy (remaining charts, --skip-charts for
 #           the three above)
-#        4) apply seed kubeconfig secret directly (no git push for this part)
-#        5) apply Seed CR pointing at that secret
+#        5) apply seed kubeconfig secret directly (no git push for this part)
+#        6) apply Seed CR pointing at that secret
+#        7) create the CA-trust secret IAP's oauth2-proxy needs to call out to
+#           dex's self-signed HTTPS endpoint (best-effort, doesn't block on it)
 set -euo pipefail
 
 echodate() {
@@ -75,7 +82,7 @@ pushGitopsValuesRef() {
 
   git worktree add --detach "$wt_dir" "$base_ref" >/dev/null
 
-  mkdir -p "${wt_dir}/local-kind/self"
+  mkdir -p "${wt_dir}/local-kind/self/clusters"
   cat >"${wt_dir}/local-kind/values.yaml" <<'EOF'
 # Env-specific overlay for the "local-kind" ArgoCD environment. Intentionally
 # empty -- this environment has a single seed ("self", master==seed) and all
@@ -84,11 +91,16 @@ pushGitopsValuesRef() {
 # it unconditionally.
 EOF
   sed "s/__KKP_DOMAIN__/${KKP_DOMAIN}/g" "${LOCAL_ENV_DIR}/values.yaml" >"${wt_dir}/local-kind/self/values.yaml"
+  sed "s/__KKP_DOMAIN__/${KKP_DOMAIN}/g" "${LOCAL_ENV_DIR}/values-usermla.yaml" >"${wt_dir}/local-kind/self/values-usermla.yaml"
+
+  # Raw manifests applied as-is by the seedExtras ArgoCD Application (project +
+  # bringyourown test cluster) -- no __KKP_DOMAIN__ templating needed in these.
+  cp "${LOCAL_ENV_DIR}/self/clusters/"*.yaml "${wt_dir}/local-kind/self/clusters/"
 
   (
     cd "$wt_dir"
     git checkout -B "$GITOPS_BRANCH"
-    git add local-kind/values.yaml local-kind/self/values.yaml
+    git add local-kind/values.yaml local-kind/self/values.yaml local-kind/self/values-usermla.yaml local-kind/self/clusters
     if ! git diff --cached --quiet; then
       git commit -m "Render local-kind ArgoCD values overlay (domain ${KKP_DOMAIN})"
     else
@@ -122,8 +134,27 @@ KIND_CLUSTER_NAME="${KIND_CLUSTER_NAME:-kkp-local}"
 LOCAL_KUBECONFIG="./kind-install/${KIND_CLUSTER_NAME}-kubeconfig"
 RENDERED_ENV_DIR="$(mktemp -d)"
 
+# Set to "false" to keep an already-existing kind cluster instead of
+# deleting/recreating it every run -- e.g. when a previous run got past
+# cluster creation but failed/timed out later on, and you just want to
+# continue against the same cluster. Everything after createKindCluster is
+# already idempotent (helm upgrade --install, kubectl apply), so re-running
+# against the same cluster is safe either way.
+RECREATE_CLUSTER="${RECREATE_CLUSTER:-true}"
+
 ARGO_VERSION=9.3.0
 ARGO_APPS_VERSION=2.29
+
+# Host-side directory backing ArgoCD repo-server's git clone cache (mounted
+# into the kind node via cluster-nodeport.yaml's extraMounts, then into the
+# repo-server pod itself via installArgoCD()'s repoServer.existingVolumes.tmp
+# override). Survives `kind delete cluster` -- same "don't recreate this
+# every run" idea as the registry mirrors in registry-mirror.sh, just for
+# git clones of the (large) kkpRepoURL repo instead of container images.
+# Owned by uid 999 because that's the non-root user the argo-cd images run
+# as (repoServer.containerSecurityContext.runAsNonRoot).
+ARGOCD_REPO_CACHE_HOST_DIR="/var/lib/local-kind-argocd-repo-cache"
+ARGOCD_REPO_CACHE_NODE_PATH="/mnt/argocd-repo-cache"
 
 # shellcheck source=./registry-mirror.sh
 source ./kind-install/registry-mirror.sh
@@ -163,12 +194,22 @@ validatePreReq() {
   fi
 }
 
+ensureArgoRepoCacheDir() {
+  mkdir -p "$ARGOCD_REPO_CACHE_HOST_DIR"
+  chown -R 999:999 "$ARGOCD_REPO_CACHE_HOST_DIR"
+}
+
 createKindCluster() {
-  echodate "(Re)creating kind cluster '${KIND_CLUSTER_NAME}'."
-  kind delete cluster --name "$KIND_CLUSTER_NAME" || true
-  kind create cluster --name "$KIND_CLUSTER_NAME" \
-    --config ./kind-install/cluster-nodeport.yaml \
-    --kubeconfig "$LOCAL_KUBECONFIG"
+  if [ "$RECREATE_CLUSTER" = "false" ] && kind get clusters 2>/dev/null | grep -qx "$KIND_CLUSTER_NAME"; then
+    echodate "Reusing existing kind cluster '${KIND_CLUSTER_NAME}' (RECREATE_CLUSTER=false)."
+    kind get kubeconfig --name "$KIND_CLUSTER_NAME" >"$LOCAL_KUBECONFIG"
+  else
+    echodate "(Re)creating kind cluster '${KIND_CLUSTER_NAME}'."
+    kind delete cluster --name "$KIND_CLUSTER_NAME" || true
+    kind create cluster --name "$KIND_CLUSTER_NAME" \
+      --config ./kind-install/cluster-nodeport.yaml \
+      --kubeconfig "$LOCAL_KUBECONFIG"
+  fi
   connectRegistryMirrorsToKindNetwork
 }
 
@@ -180,7 +221,9 @@ installArgoCD() {
   helm upgrade --install argocd --version "${ARGO_VERSION}" --namespace argocd --create-namespace \
     argo/argo-cd -f values-argocd.yaml \
     --set "server.ingress.hostname=argocd.${KKP_DOMAIN}" \
-    --set 'server.ingress.annotations.cert-manager\.io/cluster-issuer=selfsigned-issuer'
+    --set 'server.ingress.annotations.cert-manager\.io/cluster-issuer=selfsigned-issuer' \
+    --set "repoServer.existingVolumes.tmp.hostPath.path=${ARGOCD_REPO_CACHE_NODE_PATH}" \
+    --set repoServer.existingVolumes.tmp.hostPath.type=DirectoryOrCreate
 }
 
 installKkpArgoApps() {
@@ -192,6 +235,28 @@ installKkpArgoApps() {
     --set kkpVersion="${KKP_VERSION}" \
     -f "${LOCAL_ENV_DIR}/argoapps-values.yaml" \
     dharapvj/argocd-apps
+}
+
+waitForArgoApps() {
+  # Give ArgoCD generous time here: on a freshly-installed ArgoCD, the
+  # repo-server/application-controller are themselves cold-starting, the
+  # first sync has to git-clone the (public) kubermatic/kubermatic repo, and
+  # image pulls for dex/cert-manager/nginx-ingress-controller are competing
+  # with everything else installKKP is about to pull too -- 2 minutes proved
+  # too short in practice, hence the 8m budget and explicit per-app wait
+  # (rather than a blind retry against a Service that may not exist yet).
+  export KUBECONFIG="$LOCAL_KUBECONFIG"
+  local app
+  for app in dex nginx-ingress-controller cert-manager; do
+    echodate "Waiting for ArgoCD Application '${app}' to become Healthy (up to 8m)."
+    if ! kubectl wait --for=jsonpath='{.status.health.status}'=Healthy \
+        "application.argoproj.io/${app}" -n argocd --timeout=8m; then
+      echodate "Application '${app}' did not reach Healthy in time. Current state:"
+      kubectl get "application.argoproj.io/${app}" -n argocd -o wide || true
+      kubectl describe "application.argoproj.io/${app}" -n argocd || true
+      return 1
+    fi
+  done
 }
 
 installKKP() {
@@ -221,9 +286,16 @@ patchCoreDNSForLocalDomain() {
 
   # nginx-ingress-controller is now installed asynchronously by ArgoCD
   # (installKkpArgoApps) rather than synchronously as part of installKKP, so
-  # its Service may not exist yet by the time this runs.
+  # its Service may not exist yet by the time this runs. waitForArgoApps
+  # already waited up to 8m for the Application to report Healthy, but that
+  # can be a false-positive on a cold ArgoCD (repo-server still git-cloning
+  # kkpRepoURL for the very first sync of the run) -- give this the same
+  # order-of-magnitude budget rather than the 2min it had before, so a slow
+  # first sync doesn't abort the whole script (set -e) before
+  # applySelfSignedIssuer ever runs, which is what left dex/argocd/kubermatic
+  # certs permanently stuck without a ClusterIssuer.
   echodate "Waiting for the nginx-ingress-controller Service to exist."
-  retry 24 kubectl get svc nginx-ingress-controller -n nginx-ingress-controller
+  retry 90 kubectl get svc nginx-ingress-controller -n nginx-ingress-controller
 
   local corefile
   corefile="$(kubectl get configmap coredns -n kube-system -o jsonpath='{.data.Corefile}')"
@@ -279,6 +351,49 @@ applySeed() {
   retry 6 kubectl apply -f "${LOCAL_ENV_DIR}/seed.yaml"
 }
 
+createIapTrustedCaSecret() {
+  # dex's TLS cert (Ingress secret "dex-tls", issued by the selfsigned-issuer
+  # ClusterIssuer) is self-signed -- issuer == subject -- so the leaf cert
+  # itself IS the CA needed to validate it. IAP's oauth2-proxy containers
+  # (seed-mla-iap in namespace "iap", user-mla-iap in namespace "mla") each
+  # need that cert available as a Secret (customProviderCA in
+  # dev/local-kind/values.yaml / values-usermla.yaml) to trust dex's HTTPS
+  # endpoint when validating the OIDC issuer. Best-effort: the iap/mla
+  # namespaces and the dex-tls secret all come from independently-syncing
+  # ArgoCD Applications, so this may need a few tries the first run through;
+  # doesn't fail the whole script if it's still not ready (oauth2-proxy pods
+  # will just crash-loop until re-run, same as any other async app that
+  # hasn't synced yet).
+  echodate "Creating CA-trust secret for IAP's oauth2-proxy (from dex's self-signed cert)."
+  export KUBECONFIG="$LOCAL_KUBECONFIG"
+
+  # Not using retry() here: its own progress messages go to stdout via
+  # echodate, which would corrupt a captured `$(...)` value.
+  local dex_cert="" i=0
+  until [ -n "$dex_cert" ]; do
+    dex_cert="$(kubectl get secret dex-tls -n dex -o jsonpath='{.data.tls\.crt}' 2>/dev/null || true)"
+    [ -n "$dex_cert" ] && break
+    i=$((i + 1))
+    if [ "$i" -ge 30 ]; then
+      echodate "WARNING: dex-tls secret not found/empty after retries -- skipping IAP CA secret. Re-run this function manually once dex's cert is issued."
+      return 0
+    fi
+    sleep 5
+  done
+
+  local ns
+  for ns in iap mla; do
+    if ! retry 20 kubectl get namespace "$ns" >/dev/null 2>&1; then
+      echodate "WARNING: namespace '${ns}' not found after retries -- skipping IAP CA secret there. Re-run once its ArgoCD Application has created the namespace."
+      continue
+    fi
+    echo "$dex_cert" | base64 -d | kubectl create secret generic selfsigned-ca-cert \
+      --namespace "$ns" \
+      --from-file=ca.crt=/dev/stdin \
+      --dry-run=client -o yaml | kubectl apply -f -
+  done
+}
+
 handBackKubeconfigOwnership() {
   # Everything above ran as root (see the re-exec at the top). Hand the
   # kubeconfig back to the invoking user so later plain `kubectl`/scripts
@@ -293,15 +408,18 @@ echodate "Starting local KKP kind bring-up."
 validatePreReq
 renderEnvFiles
 ensureRegistryMirrors
+ensureArgoRepoCacheDir
 createKindCluster
+handBackKubeconfigOwnership
 installArgoCD
 installKkpArgoApps
+waitForArgoApps
 installKKP
 patchCoreDNSForLocalDomain
 applySelfSignedIssuer
 generateAndApplySeedKubeconfig
 applySeed
-handBackKubeconfigOwnership
+createIapTrustedCaSecret
 rm -rf "$RENDERED_ENV_DIR"
 
 echodate "Done. KUBECONFIG=${LOCAL_KUBECONFIG}"

@@ -17,6 +17,34 @@ declare -A REGISTRY_MIRRORS=(
   [ghcr]="https://ghcr.io"
 )
 
+# name -> the registry hostname images actually reference (what containerd's
+# registry.mirrors key must match). Kept separate from REGISTRY_MIRRORS above
+# since e.g. docker.io images are actually served from registry-1.docker.io.
+declare -A REGISTRY_MIRROR_HOSTS=(
+  [docker]="docker.io"
+  [quay]="quay.io"
+  [registryk8s]="registry.k8s.io"
+  [ghcr]="ghcr.io"
+)
+
+# Prints the containerd config.toml mirror stanzas for all REGISTRY_MIRRORS
+# entries -- the same content baked statically into cluster-nodeport.yaml's
+# containerdConfigPatches for kind-created nodes. Used to apply the identical
+# config to worker containers that don't go through `kind create cluster`
+# (e.g. join-usercluster-node.sh's bringyourown worker, which bypasses KKP's
+# machine-controller/cloud-init node provisioning entirely, so there's no
+# Datacenter/Seed-level node-settings hook for this -- the worker's
+# containerd has to be configured directly).
+registryMirrorContainerdConfig() {
+  local name
+  for name in "${!REGISTRY_MIRRORS[@]}"; do
+    cat <<EOF
+[plugins."io.containerd.grpc.v1.cri".registry.mirrors."${REGISTRY_MIRROR_HOSTS[$name]}"]
+  endpoint = ["http://kind-registry-${name}:5000"]
+EOF
+  done
+}
+
 ensureRegistryMirror() {
   local name="$1" upstream="$2" container="kind-registry-${1}"
   if podman container inspect "$container" >/dev/null 2>&1; then
@@ -27,9 +55,15 @@ ensureRegistryMirror() {
     return
   fi
   echodate "Creating registry mirror '${container}' (upstream: ${upstream})."
+  # REGISTRY_PROXY_TTL=0s: registry:2 defaults proxy.ttl to 168h (7 days),
+  # after which cached blobs are evicted and re-fetched from upstream on
+  # next use. This is meant to be a permanent local dev cache, not a
+  # time-limited one -- 0s disables TTL-based eviction entirely. Content
+  # only goes away if you delete the "${container}-data" volume yourself.
   podman run -d --restart=always --name "$container" \
     -v "${container}-data:/var/lib/registry" \
     -e REGISTRY_PROXY_REMOTEURL="$upstream" \
+    -e REGISTRY_PROXY_TTL=0s \
     registry:2 >/dev/null
 }
 

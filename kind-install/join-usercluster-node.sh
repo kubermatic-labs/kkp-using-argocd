@@ -48,6 +48,9 @@ fi
 
 cd "$(dirname "$0")/.."
 
+# shellcheck source=./registry-mirror.sh
+source ./kind-install/registry-mirror.sh
+
 CLUSTER_NAME="${1:?Usage: $0 <cluster-name> [worker-name]}"
 WORKER_NAME="${2:-kkp-worker-${CLUSTER_NAME}}"
 BASE_IMAGE="docker.io/kindest/base:v20260601-995e8fa5"
@@ -128,6 +131,21 @@ podman run -d --name "$WORKER_NAME" --hostname "$WORKER_NAME" \
   "$BASE_IMAGE" >/dev/null
 
 echodate "Waiting for containerd to be ready inside the worker."
+for i in $(seq 1 15); do
+  podman exec "$WORKER_NAME" systemctl is-active containerd >/dev/null 2>&1 && break
+  sleep 2
+done
+
+# This worker never goes through `kind create cluster`, so it doesn't pick up
+# cluster-nodeport.yaml's containerdConfigPatches the way kind's own nodes
+# do -- and being bringyourown, KKP's machine-controller/cloud-init node
+# provisioning (where Datacenter/Seed-level node settings would apply) never
+# runs either. Apply the identical mirror config directly so image pulls for
+# cilium/coredns/konnectivity-agent/metrics-server etc. also go through the
+# local pull-through caches instead of the internet.
+echodate "Configuring containerd registry mirrors on the worker (same as the kind cluster's nodes)."
+registryMirrorContainerdConfig | podman exec -i "$WORKER_NAME" tee -a /etc/containerd/config.toml >/dev/null
+podman exec "$WORKER_NAME" systemctl restart containerd
 for i in $(seq 1 15); do
   podman exec "$WORKER_NAME" systemctl is-active containerd >/dev/null 2>&1 && break
   sleep 2

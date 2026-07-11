@@ -1,0 +1,22 @@
+# ArgoCD-managed (seedExtras app, see dev/local-kind/argoapps-values.yaml)
+# project + owner binding for the local kind test cluster. Mirrors
+# dev/demo-master/clusters/demo-project.yaml -- fixed IDs instead of
+# freshly `cat /dev/urandom`-generated ones so this stays reproducible
+# across kind cluster recreations (run-local-kind.sh deletes/recreates the
+# whole cluster every run by default).
+apiVersion: kubermatic.k8c.io/v1
+kind: Project
+metadata:
+  name: lkindproj1
+spec:
+  name: local-kind
+---
+apiVersion: kubermatic.k8c.io/v1
+kind: UserProjectBinding
+metadata:
+  name: lkindbind1
+spec:
+  group: owners-lkindproj1
+  projectID: lkindproj1
+  # must match dex's staticPasswords email (dev/local-kind/values.yaml)
+  userEmail: vijay@kubermatic.com

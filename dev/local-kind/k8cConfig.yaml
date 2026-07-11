@@ -22,7 +22,14 @@ spec:
     certificateIssuer:
       apiGroup: null
       kind: ClusterIssuer
-      name: "selfsigned-issuer"
+      # ca-issuer (dev/local-kind/ca-issuer.yaml), not selfsigned-issuer: this
+      # ingress shares its host (__KKP_DOMAIN__) with dex's own ingress
+      # (different path, same host) -- nginx serves exactly one TLS cert per
+      # hostname regardless of path, so both ingresses for this host must use
+      # the same CA-backed issuer or IAP's oauth2-proxy ends up validating
+      # dex's OIDC endpoint against whichever of the two certs nginx happens
+      # to pick, which may not be dex-tls at all.
+      name: "ca-issuer"
     className: nginx
 
   featureGates:
