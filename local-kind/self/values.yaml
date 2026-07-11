@@ -185,8 +185,18 @@ blackboxExporter:
 
 #logging
 alloy:
-  podLabels:
-    env: local-kind
+  controller:
+    podLabels:
+      env: local-kind
+    # kind nodes don't run a persistent systemd-journald under /var/log/journal,
+    # so loki.source.journal fails to open it and the alloy container crashloops.
+    initContainers:
+      - name: ensure-journal-dir
+        image: busybox:1.36
+        command: ["sh", "-c", "mkdir -p /var/log/journal"]
+        volumeMounts:
+          - name: varlog
+            mountPath: /var/log
 
 loki:
   persistence:
