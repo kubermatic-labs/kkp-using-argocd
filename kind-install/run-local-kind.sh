@@ -52,6 +52,59 @@ KKP_DOMAIN="kkp.${WSL_IP}.nip.io"
 GITOPS_BRANCH="local-kind-gitops"
 GITOPS_TAG="local-kind-kkp-${KKP_VERSION}"
 
+# Host-level fixes from HANDOFF.md's "Host-level prerequisites" section and
+# failure-history items 10/11/13 -- without these, the failure only shows up
+# much later as an opaque cilium/kube-proxy crash deep inside the cluster,
+# long after this script has moved on to other things. Check them up front
+# instead. Called once now (pre-root, pre-git-push -- catches bpffs/pids_limit
+# fast without wasting a sudo password prompt) and again implicitly when the
+# whole script re-execs as root below, at which point the root-only checks
+# (memlock, rootful podman) also run.
+validateHostPreReqs() {
+  echodate "Validating host-level prerequisites (see kind-install/HANDOFF.md)."
+  local errors=0
+
+  if ! mount | grep -q "on /sys/fs/bpf type bpf"; then
+    echodate "Error: bpffs is not mounted at /sys/fs/bpf (cilium needs it). Fix: sudo mount -t bpf bpf /sys/fs/bpf && add the fstab entry (HANDOFF.md host-prereq #1)."
+    errors=1
+  fi
+
+  # Only the last assignment in the file matters if there happens to be more
+  # than one; doesn't look at /etc/containers/containers.conf.d/*.conf
+  # drop-ins, but this host doesn't use any.
+  local pids_limit
+  pids_limit="$(awk -F= '/^[[:space:]]*pids_limit[[:space:]]*=/ {gsub(/[[:space:]]/,"",$2); print $2}' /etc/containers/containers.conf 2>/dev/null | tail -1)"
+  if [ -z "$pids_limit" ] || [ "$pids_limit" -lt 8192 ]; then
+    echodate "Error: podman pids_limit is '${pids_limit:-2048 (default)}', too low for the ~40+ pods that start at once once the full ArgoCD app stack is enabled. Fix: add 'pids_limit = 16384' under [containers] in /etc/containers/containers.conf (HANDOFF.md failure-history #13)."
+    errors=1
+  fi
+
+  # These two only mean anything once run as root: the memlock fix only
+  # takes effect through a real PAM session (see the sudo re-exec below and
+  # HANDOFF.md host-prereq #2), and rootful podman is a separate
+  # instance/storage from any rootless one that may already work fine.
+  if [ "$(id -u)" -eq 0 ]; then
+    local memlock_hardlimit
+    memlock_hardlimit="$(ulimit -Hl)"
+    if [ "$memlock_hardlimit" != "unlimited" ]; then
+      echodate "Error: memlock hard ulimit is '${memlock_hardlimit}', not 'unlimited' (cilium-agent needs it for eBPF maps). Fix: HANDOFF.md host-prereq #2, then re-run from a real login terminal (not VSCode-spawned) so sudo's PAM session picks it up."
+      errors=1
+    fi
+
+    if ! podman info >/dev/null 2>&1; then
+      echodate "Error: 'podman info' failed as root -- rootful podman isn't initialized on this host yet. Fix: run 'sudo podman info' and 'sudo podman run --rm hello-world' manually first (see HANDOFF.md's rootful-podman decision)."
+      errors=1
+    fi
+  fi
+
+  if [ "$errors" -ne 0 ]; then
+    echodate "Aborting: one or more host-level prerequisites are not met (see kind-install/HANDOFF.md)."
+    exit 1
+  fi
+}
+
+validateHostPreReqs
+
 # Renders dev/local-kind/values.yaml (the nginx/dex/cert-manager Helm values)
 # into local-kind/self/values.yaml and pushes it to GITOPS_BRANCH/GITOPS_TAG,
 # so the ArgoCD Applications created by installKkpArgoApps() can fetch it.
@@ -82,7 +135,7 @@ pushGitopsValuesRef() {
 
   git worktree add --detach "$wt_dir" "$base_ref" >/dev/null
 
-  mkdir -p "${wt_dir}/local-kind/self/clusters"
+  mkdir -p "${wt_dir}/local-kind/self/clusters" "${wt_dir}/local-kind/settings"
   cat >"${wt_dir}/local-kind/values.yaml" <<'EOF'
 # Env-specific overlay for the "local-kind" ArgoCD environment. Intentionally
 # empty -- this environment has a single seed ("self", master==seed) and all
@@ -97,10 +150,16 @@ EOF
   # bringyourown test cluster) -- no __KKP_DOMAIN__ templating needed in these.
   cp "${LOCAL_ENV_DIR}/self/clusters/"*.yaml "${wt_dir}/local-kind/self/clusters/"
 
+  # KubermaticSetting CR (dashboard left-nav customLinks), applied by the
+  # seedSettings ArgoCD Application -- needs the same __KKP_DOMAIN__
+  # templating as values.yaml since customLinks embeds the seed/user-cluster
+  # MLA hostnames.
+  sed "s/__KKP_DOMAIN__/${KKP_DOMAIN}/g" "${LOCAL_ENV_DIR}/settings/00_kubermaticsettings.yaml" >"${wt_dir}/local-kind/settings/00_kubermaticsettings.yaml"
+
   (
     cd "$wt_dir"
     git checkout -B "$GITOPS_BRANCH"
-    git add local-kind/values.yaml local-kind/self/values.yaml local-kind/self/values-usermla.yaml local-kind/self/clusters
+    git add local-kind/values.yaml local-kind/self/values.yaml local-kind/self/values-usermla.yaml local-kind/self/clusters local-kind/settings
     if ! git diff --cached --quiet; then
       git commit -m "Render local-kind ArgoCD values overlay (domain ${KKP_DOMAIN})"
     else

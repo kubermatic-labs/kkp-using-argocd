@@ -21,3 +21,5 @@ spec:
       location: "Local kind (bring your own nodes)"
       spec:
         bringyourown: {}
+  mla:
+    userClusterMLAEnabled: true

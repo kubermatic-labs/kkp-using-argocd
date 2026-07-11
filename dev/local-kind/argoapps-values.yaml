@@ -40,6 +40,18 @@ nginx:
 certManager:
   enable: true
   autoSync: true
+# Real kubeone-based envs (dev/demo-master) get this for free from kubeone's
+# default addon set; this kind-based seed has no kubeone in the loop, so it's
+# managed via ArgoCD instead (see the kkp-argo-apps chart's metricsServer app).
+metricsServer:
+  enable: true
+  autoSync: true
+
+# KubermaticSetting CR (dashboard left-nav customLinks to Grafana/Prometheus/
+# Alertmanager, admin defaults) -- dev/local-kind/settings/00_kubermaticsettings.yaml.
+seedSettings:
+  enable: true
+  autoSync: true
 
 # Project + test cluster (bringyourown) creation -- see
 # dev/local-kind/self/clusters/{project,cluster}.yaml. Not waited on; ArgoCD

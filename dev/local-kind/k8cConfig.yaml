@@ -9,8 +9,18 @@ metadata:
   namespace: kubermatic
 spec:
   # insert the Docker authentication JSON provided by Kubermatic here
-  imagePullSecret:
-
+  imagePullSecret: |
+    {
+        "auths": {
+            "quay.io/kubermatic": {
+                "auth": "a3ViZXJtYXRpYytkZXZfa3ViZXJtYXRpY19pbzpIMzhWRkJWMTFRMDNNNFFDRzJUMkMwQTlOS0RPUk5NUk5QM0RLT0o0RjBQQ05CNU02WDhEQ0FNNzNBWU5OTVda",
+                "email": ""
+            },
+            "quay.io/dharapvj": {
+                "auth": "ZGhhcmFwdmorZGhhcmFwdmpfazhzOlRXR0tEMEdWRVRGRkdVNjlZWjVERDFVTjJDUkJDSUVSOExBVVAzMURGRkI1MkUzTkJZTkVYTlM1NVRLSjdJWVI="
+            }
+        }
+    }
   ingress:
     # __KKP_DOMAIN__ is templated at runtime by run-local-kind.sh into
     # kkp.<wsl-ip>.nip.io -- a public DNS wildcard that resolves to whatever
