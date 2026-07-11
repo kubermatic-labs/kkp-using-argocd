@@ -1,0 +1,94 @@
+# ArgoCD-managed (seedExtras app) bringyourown test cluster for the local
+# kind seed. Spec copied verbatim from kind-install/test-cluster.yaml, which
+# is the proven-working config from HANDOFF.md's "MILESTONE FULLY HIT"
+# (rootful podman + ebpf proxyMode + apiserverNetworkPolicy, no
+# componentsOverride.apiserver.nodePortRange -- see HANDOFF.md failure
+# history items 4 and 11-12 for why). Only the name and project-id label
+# changed, to point at the project this same seedExtras app also creates
+# (see project.yaml) instead of a project created by hand via the dashboard.
+#
+# After this cluster reaches Running (kubectl get cluster lkindclus1), join a
+# worker node the same way as before:
+#   ./kind-install/join-usercluster-node.sh lkindclus1
+apiVersion: kubermatic.k8c.io/v1
+kind: Cluster
+metadata:
+  labels:
+    project-id: lkindproj1
+  name: lkindclus1
+spec:
+  auditLogging: {}
+  cloud:
+    bringyourown: {}
+    dc: kind-byo
+    providerName: bringyourown
+  clusterNetwork:
+    dnsDomain: cluster.local
+    ipFamily: IPv4
+    ipvs:
+      strictArp: true
+    konnectivityEnabled: true
+    nodeCidrMaskSizeIPv4: 24
+    nodeLocalDNSCacheEnabled: true
+    pods:
+      cidrBlocks:
+      - 172.25.0.0/16
+    proxyMode: ebpf
+    services:
+      cidrBlocks:
+      - 10.240.16.0/20
+  cniPlugin:
+    type: cilium
+    version: 1.18.2
+  componentsOverride:
+    apiserver:
+      # 1, not 2: with 2 replicas each apiserver pod gets its own
+      # konnectivity-server sidecar, but the konnectivity-agent's tunnel only
+      # reliably connects to one of them -- the other permanently fails
+      # aggregated-API discovery checks (metrics-server etc.) with "No agent
+      # available" and retries in a tight loop, burning real CPU on both
+      # kube-apiserver processes.
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+    controllerManager:
+      leaderElection: {}
+      replicas: 1
+    etcd:
+      clusterSize: 3
+      diskSize: 5Gi
+    konnectivityProxy: {}
+    nodePortProxyEnvoy:
+      resources: {}
+    prometheus: {}
+    scheduler:
+      leaderElection: {}
+      replicas: 1
+  containerRuntime: containerd
+  enableUserSSHKeyAgent: false
+  exposeStrategy: NodePort
+  features:
+    EtcdLauncher: true
+    OIDCKubeCfgEndpoint: true
+    OpenIDAuthPlugin: true
+    apiserverNetworkPolicy: true
+    etcdLauncher: true
+  humanReadableName: local-kind-test-cluster
+  kubelb:
+    enableGatewayAPI: false
+    enabled: false
+    useLoadBalancerClass: false
+  kubernetesDashboard: {}
+  kyverno:
+    enabled: false
+  mla: {}
+  oidc: {}
+  opaIntegration:
+    webhookTimeoutSeconds: 10
+  pause: false
+  version: 1.33.11

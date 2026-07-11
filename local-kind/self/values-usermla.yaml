@@ -1,0 +1,95 @@
+# Values for the user-cluster MLA stack (userMla.* apps in
+# dev/local-kind/argoapps-values.yaml), rendered and pushed by
+# run-local-kind.sh's pushGitopsValuesRef() to local-kind/self/values-usermla.yaml
+# (path the kkp-argo-apps chart's argo-cd-apps.user-mla-values-file.path
+# template resolves to). Adapted from dev/demo-master/values-usermla.yaml:
+# same minimal-resource "DEMO ONLY" convention, trimmed further for a
+# single-node kind cluster, local nip.io domain + selfsigned issuer instead
+# of letsencrypt.
+
+cortex:
+  alertmanager:
+    persistentVolume:
+      size: 1Gi
+  compactor:
+    persistentVolume:
+      size: 1Gi
+  store_gateway:
+    persistentVolume:
+      size: 1Gi
+
+iap:
+  oidc_issuer_url: https://kkp.172.22.173.121.nip.io:8443/dex
+  customProviderCA:
+    secretName: selfsigned-ca-cert
+    secretKey: ca.crt
+  deployments:
+    grafana:
+      name: grafana
+      replicas: 1
+      client_id: grafana_user_self
+      client_secret: xK7EjZM2gmp3DRrl0APlMkNDcS1hEf7m
+      encryption_key: zg4HJdRpv2MvCIqGQvFoHZhUkYQXCw2C
+      config:
+        approval_prompt: none
+        scope: "groups openid email"
+        email_domains:
+          - "*"
+        skip_auth_regex:
+          - "/api/health"
+        pass_user_headers: true
+        upstream_timeout: "5m"
+      upstream_service: grafana.mla.svc.cluster.local
+      upstream_port: 80
+      ingress:
+        host: "grafana-user.kkp.172.22.173.121.nip.io"
+        tls:
+          - secretName: grafana-user-iap-tls
+            hosts:
+              - "grafana-user.kkp.172.22.173.121.nip.io"
+        annotations:
+          cert-manager.io/cluster-issuer: selfsigned-issuer
+
+    alertmanager:
+      name: alertmanager
+      replicas: 1
+      client_id: alertmanager_user_self
+      client_secret: LBZSAXMklV6Z1OWqHF2Fphgale1zY4TP
+      encryption_key: XeX4PLvKY6XSOeaTPUt6YxluWxqylGue
+      config:
+        approval_prompt: none
+        scope: "groups openid email"
+        email_domains:
+          - "*"
+        skip_auth_regex:
+          - "/ready"
+        pass_user_headers: true
+      upstream_service: alertmanager-proxy.mla.svc.cluster.local
+      upstream_port: 8080
+      ingress:
+        host: "alertmanager-user.kkp.172.22.173.121.nip.io"
+        tls:
+          - secretName: alertmanager-user-iap-tls
+            hosts:
+              - "alertmanager-user.kkp.172.22.173.121.nip.io"
+        annotations:
+          cert-manager.io/cluster-issuer: selfsigned-issuer
+
+mlaSecrets:
+  grafana:
+    adminPassword: tjWrM9HvA1HQlbhN8RARjyGl
+  minio:
+    secretKey: WiTwTIdtTARUpzwdFeM30AStNjUmvxxqSGKMee1j
+    accessKey: FiiRllrMizh61PdzZ71p
+
+# DEMO ONLY resource allocation. Not PROD GRADE!
+consul:
+  server:
+    resource:
+      requests:
+        cpu: 20m
+minio:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 10m
