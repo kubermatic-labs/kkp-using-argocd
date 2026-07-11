@@ -218,6 +218,11 @@ installArgoCD() {
   export KUBECONFIG="$LOCAL_KUBECONFIG"
   helm repo add argo https://argoproj.github.io/argo-helm >/dev/null 2>&1 || true
   helm repo update argo >/dev/null
+  # values-argocd.yaml's configs.cm.timeout.reconciliation (30s, tuned down
+  # from ArgoCD's 180s default for this whole test/validation setup -- both
+  # this and ci.sh's kubeone-based envs use the same shared file) means a
+  # stuck/first-comparison-race Application (see waitForArgoApps' hard-refresh
+  # below) self-heals well under a minute instead of possibly minutes.
   helm upgrade --install argocd --version "${ARGO_VERSION}" --namespace argocd --create-namespace \
     argo/argo-cd -f values-argocd.yaml \
     --set "server.ingress.hostname=argocd.${KKP_DOMAIN}" \
@@ -226,11 +231,33 @@ installArgoCD() {
     --set repoServer.existingVolumes.tmp.hostPath.type=DirectoryOrCreate
 }
 
-installKkpArgoApps() {
-  echodate "Installing ArgoCD Applications for dex/nginx-ingress-controller/cert-manager (kkp-argo-apps)."
+installKkpArgoAppsCore() {
+  # Phase 1: dex/nginx-ingress-controller/cert-manager ONLY (see
+  # argoapps-values-core.yaml's comment for why this is split out) -- these
+  # are the only ArgoCD-managed apps installKKP actually needs up, and
+  # waitForArgoApps waits for exactly these three next.
+  echodate "Installing ArgoCD Applications for dex/nginx-ingress-controller/cert-manager (kkp-argo-apps, core)."
   export KUBECONFIG="$LOCAL_KUBECONFIG"
   helm repo add dharapvj https://dharapvj.github.io/helm-charts/ >/dev/null 2>&1 || true
   helm repo update dharapvj >/dev/null
+  helm upgrade --install kkp-argo-apps --version "${ARGO_APPS_VERSION}.*" \
+    --set kkpVersion="${KKP_VERSION}" \
+    -f "${LOCAL_ENV_DIR}/argoapps-values-core.yaml" \
+    dharapvj/argocd-apps
+}
+
+installKkpArgoAppsFull() {
+  # Phase 2: enable the rest of the stack (monitoring/logging/backup/storage/
+  # IAP/user-cluster MLA/seedExtras) only now that core is up -- same Helm
+  # release, upgraded with the superset values file, so dex/nginx/cert-manager
+  # are untouched and every other Application gets created here instead of
+  # all at once in phase 1. Called after installKKP (not just after
+  # waitForArgoApps) so the installer's own image pulls aren't ALSO competing
+  # with this burst -- see argoapps-values-core.yaml's comment for the
+  # process/fork-exhaustion this is working around on a single-node kind
+  # cluster.
+  echodate "Installing remaining ArgoCD Applications (monitoring/logging/backup/storage/IAP/userMLA/seedExtras)."
+  export KUBECONFIG="$LOCAL_KUBECONFIG"
   helm upgrade --install kkp-argo-apps --version "${ARGO_APPS_VERSION}.*" \
     --set kkpVersion="${KKP_VERSION}" \
     -f "${LOCAL_ENV_DIR}/argoapps-values.yaml" \
@@ -247,6 +274,23 @@ waitForArgoApps() {
   # (rather than a blind retry against a Service that may not exist yet).
   export KUBECONFIG="$LOCAL_KUBECONFIG"
   local app
+
+  # Confirmed live (2026-07-11): the Application controller's very first
+  # comparison pass for these apps can race repo-server/redis's own startup
+  # (both still coming up in the same freshly-installed ArgoCD), leaving sync
+  # status stuck at "Unknown" with a stale ComparisonError. ArgoCD's default
+  # periodic resync (argocd-cm timeout.reconciliation, 180s) does eventually
+  # catch this on its own -- confirmed cert-manager/nginx-ingress-controller
+  # both self-healed that way -- but dex sat stuck for several minutes past
+  # that window with no further reconcile attempt logged at all, until a
+  # manual hard-refresh immediately kicked it into OutOfSync/syncing. Forcing
+  # that refresh here removes the guesswork instead of hoping the periodic
+  # resync gets to every app promptly.
+  for app in dex nginx-ingress-controller cert-manager; do
+    kubectl annotate "application.argoproj.io/${app}" -n argocd \
+      argocd.argoproj.io/refresh=hard --overwrite >/dev/null 2>&1 || true
+  done
+
   for app in dex nginx-ingress-controller cert-manager; do
     echodate "Waiting for ArgoCD Application '${app}' to become Healthy (up to 8m)."
     if ! kubectl wait --for=jsonpath='{.status.health.status}'=Healthy \
@@ -317,6 +361,27 @@ applySelfSignedIssuer() {
   # asynchronously by ArgoCD (installKkpArgoApps) rather than synchronously
   # as part of installKKP, so it takes longer to become ready.
   retry 30 kubectl apply -f "${LOCAL_ENV_DIR}/selfsigned-issuer.yaml"
+
+  # Also apply a real CA (dev/local-kind/ca-issuer.yaml): a plain
+  # selfSigned-issuer leaf cert (e.g. dex-tls) has Basic Constraints
+  # CA:FALSE, which Go's crypto/x509 verifier refuses to treat as a trust
+  # anchor even though issuer == subject -- that's what left IAP's
+  # oauth2-proxy crash-looping with "x509: invalid signature: parent
+  # certificate cannot sign this kind of certificate". dex's own ingress
+  # (dev/local-kind/values.yaml) AND the kubermatic dashboard/API ingress
+  # (dev/local-kind/k8cConfig.yaml's ingress.certificateIssuer) are both
+  # switched to this ca-issuer -- they share the SAME host (__KKP_DOMAIN__,
+  # different paths), and nginx serves exactly one TLS cert per hostname
+  # regardless of which ingress/path it came from. Leaving either one on
+  # selfsigned-issuer means nginx may serve that cert for the whole host,
+  # which oauth2-proxy then fails to validate even after the CA fix above
+  # (confirmed by hitting this live: dex's cert alone wasn't enough, the
+  # kubermatic ingress's cert was the one actually being served on
+  # :8443 for the shared host). The CA's own cert (not either leaf cert) is
+  # what createIapTrustedCaSecret distributes to iap/mla.
+  echodate "Applying root CA Certificate + ca ClusterIssuer for IAP trust."
+  retry 30 kubectl apply -f "${LOCAL_ENV_DIR}/ca-issuer.yaml"
+  retry 30 kubectl wait --for=condition=Ready certificate/local-kind-ca -n cert-manager --timeout=10s
 }
 
 generateAndApplySeedKubeconfig() {
@@ -352,30 +417,34 @@ applySeed() {
 }
 
 createIapTrustedCaSecret() {
-  # dex's TLS cert (Ingress secret "dex-tls", issued by the selfsigned-issuer
-  # ClusterIssuer) is self-signed -- issuer == subject -- so the leaf cert
-  # itself IS the CA needed to validate it. IAP's oauth2-proxy containers
-  # (seed-mla-iap in namespace "iap", user-mla-iap in namespace "mla") each
-  # need that cert available as a Secret (customProviderCA in
-  # dev/local-kind/values.yaml / values-usermla.yaml) to trust dex's HTTPS
-  # endpoint when validating the OIDC issuer. Best-effort: the iap/mla
-  # namespaces and the dex-tls secret all come from independently-syncing
-  # ArgoCD Applications, so this may need a few tries the first run through;
-  # doesn't fail the whole script if it's still not ready (oauth2-proxy pods
-  # will just crash-loop until re-run, same as any other async app that
-  # hasn't synced yet).
-  echodate "Creating CA-trust secret for IAP's oauth2-proxy (from dex's self-signed cert)."
+  # IAP's oauth2-proxy containers (seed-mla-iap in namespace "iap",
+  # user-mla-iap in namespace "mla") need dex's CA available as a Secret
+  # (customProviderCA in dev/local-kind/values.yaml / values-usermla.yaml) to
+  # trust dex's HTTPS endpoint when validating the OIDC issuer. This must be
+  # the root CA cert from dev/local-kind/ca-issuer.yaml (secret
+  # local-kind-ca-secret in the cert-manager namespace), NOT dex-tls's own
+  # leaf cert -- a plain selfSigned-issuer leaf has Basic Constraints
+  # CA:FALSE, which Go's crypto/x509 verifier refuses to treat as a trust
+  # anchor even though issuer == subject (confirmed: oauth2-proxy crash-loops
+  # with "x509: invalid signature: parent certificate cannot sign this kind
+  # of certificate" if given the leaf cert instead of the CA). Best-effort:
+  # the iap/mla namespaces and the CA secret come from independently-syncing
+  # ArgoCD Applications / applySelfSignedIssuer, so this may need a few tries
+  # the first run through; doesn't fail the whole script if it's still not
+  # ready (oauth2-proxy pods will just crash-loop until re-run, same as any
+  # other async app that hasn't synced yet).
+  echodate "Creating CA-trust secret for IAP's oauth2-proxy (from the local-kind root CA)."
   export KUBECONFIG="$LOCAL_KUBECONFIG"
 
   # Not using retry() here: its own progress messages go to stdout via
   # echodate, which would corrupt a captured `$(...)` value.
-  local dex_cert="" i=0
-  until [ -n "$dex_cert" ]; do
-    dex_cert="$(kubectl get secret dex-tls -n dex -o jsonpath='{.data.tls\.crt}' 2>/dev/null || true)"
-    [ -n "$dex_cert" ] && break
+  local ca_cert="" i=0
+  until [ -n "$ca_cert" ]; do
+    ca_cert="$(kubectl get secret local-kind-ca-secret -n cert-manager -o jsonpath='{.data.tls\.crt}' 2>/dev/null || true)"
+    [ -n "$ca_cert" ] && break
     i=$((i + 1))
     if [ "$i" -ge 30 ]; then
-      echodate "WARNING: dex-tls secret not found/empty after retries -- skipping IAP CA secret. Re-run this function manually once dex's cert is issued."
+      echodate "WARNING: local-kind-ca-secret not found/empty after retries -- skipping IAP CA secret. Re-run this function manually once the CA cert is issued."
       return 0
     fi
     sleep 5
@@ -387,7 +456,7 @@ createIapTrustedCaSecret() {
       echodate "WARNING: namespace '${ns}' not found after retries -- skipping IAP CA secret there. Re-run once its ArgoCD Application has created the namespace."
       continue
     fi
-    echo "$dex_cert" | base64 -d | kubectl create secret generic selfsigned-ca-cert \
+    echo "$ca_cert" | base64 -d | kubectl create secret generic selfsigned-ca-cert \
       --namespace "$ns" \
       --from-file=ca.crt=/dev/stdin \
       --dry-run=client -o yaml | kubectl apply -f -
@@ -412,13 +481,14 @@ ensureArgoRepoCacheDir
 createKindCluster
 handBackKubeconfigOwnership
 installArgoCD
-installKkpArgoApps
+installKkpArgoAppsCore
 waitForArgoApps
 installKKP
 patchCoreDNSForLocalDomain
 applySelfSignedIssuer
 generateAndApplySeedKubeconfig
 applySeed
+installKkpArgoAppsFull
 createIapTrustedCaSecret
 rm -rf "$RENDERED_ENV_DIR"
 

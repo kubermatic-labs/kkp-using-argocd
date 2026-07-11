@@ -14,7 +14,8 @@ server:
     enabled: true
     ingressClassName: nginx
     annotations:
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+      # backend service is no more HTTPS
+      #nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
       cert-manager.io/cluster-issuer: letsencrypt-prod
     # supply this via --set so that we can use single ArgoCD def for all environments
     # hostname: argocd.argodemo.lab.kubermatic.io
@@ -29,7 +30,15 @@ server:
 #     # -- Used if Argo CD is running behind reverse proxy under subpath different from /
 #     server.rootpath: '/argocd'
 configs:
+  params:
+    server.insecure: true
   cm:
+    # This whole setup (both ci.sh's kubeone-based envs and the local-kind
+    # dev loop) is a test/validation setup, not a real production ArgoCD --
+    # favor fast feedback over steady-state reconcile load. Default is 180s;
+    # this cuts a stuck/first-comparison-race Application's self-heal time
+    # from up to 3 minutes down to well under a minute.
+    timeout.reconciliation: "30s"
     resource.exclusions: |
       - apiGroups:
         - "velero.io"
@@ -43,3 +52,19 @@ configs:
         - CiliumIdentity
         clusters:
         - "*"
+    resourceCustomizations: |
+      argoproj.io/Application:
+        health.lua: |
+          hs = {}
+          if obj.status ~= nil then
+            if obj.status.health ~= nil then
+              hs.status = obj.status.health.status
+              if obj.status.health.message ~= nil then
+                hs.message = obj.status.health.message
+              end
+              return hs
+            end
+          end
+          hs.status = "Progressing"
+          hs.message = ""
+          return hs
